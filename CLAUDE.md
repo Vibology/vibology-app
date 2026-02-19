@@ -10,36 +10,30 @@ Vibology is a native macOS application that synthesizes five symbolic instrument
 
 | Layer | Component | Implementation |
 |-------|-----------|----------------|
-| **Calculation** | Headless Engine | Docker container running Python/FastAPI with pyswisseph (Swiss Ephemeris) |
-| **Research** | The Ephemeris | Obsidian (Markdown) with YAML frontmatter for metadata |
+| **Calculation** | Headless Engine | Python/FastAPI (Cartographer) on Google Cloud Run with pyswisseph |
+| **Research** | The Ephemeris | Obsidian (Markdown) with YAML frontmatter, synced via iCloud |
 | **Interface** | Native Client | SwiftUI for macOS with Glassmorphism/Synthwave aesthetics |
-| **Database** | Persistent Store | SQLite with SQLCipher (encryption) and FTS5 (full-text search) |
+| **Database** | Persistent Store | Turso (cloud-hosted libSQL/SQLite) — client data + Ephemeris index |
 | **Data Logic** | Bridge | GRDB.swift for reactive, type-safe database management |
 
 ### Infrastructure
 
-**Two-Machine Architecture:**
-- **2018 Mac Mini (A1993)** - File server with 2-bay DAS
-  - Hosts: Obsidian vault, SQLite database, Docker calculation engine
-  - Shares directories via SMB 3.0
-  - Runs real-time notification watcher service
-
-- **M1 Mac Mini** - Main workstation
-  - Runs native SwiftUI application
-  - Mounts server directories as network drives
-  - Clean local storage, minimal dependencies
+**Serverless Architecture** — no dedicated file server required:
+- **Cartographer** (Google Cloud Run) — calculation engine, scales to zero
+- **Turso** — cloud-hosted SQLite, accessible from any Mac anywhere
+- **iCloud** — Obsidian vault sync across devices
+- **Any Mac** — runs the SwiftUI app; no local server dependencies
 
 **Security:**
-- Client data encrypted via SQLCipher at database level
-- Privacy maintained even if network share is accessed
+- Client data encrypted at rest via Turso (SOC 2 certified)
+- Application-layer encryption for any fields requiring additional privacy
+- Turso uses the same trust model as Cloud Run — third-party hosted, encrypted
 
-### Real-Time Sync Pipeline
+### Real-Time Sync
 
-**The Watcher Service** (runs on 2018 Mini):
-1. Monitors local FSEvents on network-accessible directories
-2. Detects file changes (e.g., Obsidian note saves from M1)
-3. Sends WebSocket or UDP "Refresh" signal to M1 app
-4. M1 app re-queries network SQLite index, updating UI instantly
+Obsidian vault syncs to each Mac via iCloud. The app watches the local iCloud
+path directly with FSEvents — no watcher service or dedicated server needed.
+When a note changes on disk, the app re-queries Turso's index and refreshes.
 
 ## Application Logic
 
@@ -55,7 +49,7 @@ The app synthesizes five distinct symbolic lenses:
 
 ### Live Session Workflow
 
-1. **Calculation** - Enter birth data → M1 app calls 2018 Mini Docker API → receives JSON blueprint
+1. **Calculation** - Enter birth data → app calls Cartographer (Cloud Run) → receives JSON blueprint
 2. **Physical Interaction** - Pull Tarot or Astrolabe cards physically
 3. **Digital Retrieval** - Select cards in UI → GRDB joins card ID with Obsidian notes
 4. **Synthesis** - Display personal commentary, shadow/gift/siddhi, archetypal stories alongside technical chart
@@ -64,16 +58,16 @@ The app synthesizes five distinct symbolic lenses:
 
 - **Reporting**: PDFKit renders branded PDF reports combining Blueprint (JSON) + Narrative (Markdown)
 - **Search**: FTS5 full-text search across entire esoteric corpus in milliseconds (network-hosted)
-- **Redundancy**: Daily hot backup (SQLITE VACUUM INTO) on 2018 Mini to DAS
+- **Redundancy**: Turso handles replication and backup automatically
 
 ## Data Flow
 
 ```
-Edit    → Write in Obsidian on M1 (saves to 2018 Mini DAS via network share)
-Notify  → 2018 Mini Watcher detects change, pings M1 App
-Index   → M1 App updates SQLite view of The Ephemeris
-Consult → M1 App requests calculations from 2018 Mini Docker API
-Secure  → Client session logs encrypted via SQLCipher, saved to 2018 Mini
+Edit    → Write in Obsidian on any Mac (syncs to iCloud)
+Detect  → App watches local iCloud path via FSEvents, detects note changes
+Index   → App re-queries Turso index, refreshes Ephemeris view
+Consult → App calls Cartographer (Cloud Run) for chart calculations
+Secure  → Client session data written to Turso (encrypted at rest, SOC 2)
 ```
 
 ## Development Guidelines
@@ -127,10 +121,11 @@ macOS Tahoe uses the `.icon` format (authored in Icon Composer, ships with Xcode
 
 ### Security & Privacy
 
-- **ALWAYS** use SQLCipher for client data
+- Client data stored in Turso — encrypted at rest, SOC 2 certified
 - Never log sensitive personal information
-- Encrypt birth data, session notes, client identifiers
-- Network communication should be authenticated
+- Encrypt sensitive fields at the application layer before writing to Turso
+  (birth data, session notes, client identifiers) as a defense-in-depth measure
+- Network communication authenticated via Turso auth tokens (stored in Keychain)
 
 ### Performance
 
@@ -153,11 +148,12 @@ macOS Tahoe uses the `.icon` format (authored in Icon Composer, ships with Xcode
 - Declarative, reactive patterns
 - Combine for data flow
 
-### GRDB.swift
-- Type-safe SQLite wrapper
+### GRDB.swift + Turso
+- Type-safe SQLite/libSQL wrapper
+- Turso's libSQL is wire-compatible with SQLite — GRDB connects via the Turso Swift SDK
 - Reactive queries via Combine
 - Migration support
-- FTS5 integration
+- FTS5 for full-text search across Ephemeris index
 
 ### Docker + Python/FastAPI (Cartographer)
 - Calculation engine isolated in container, deployed to Cloud Run
@@ -166,11 +162,11 @@ macOS Tahoe uses the `.icon` format (authored in Icon Composer, ships with Xcode
 - Endpoints: `/chart/natal`, `/humandesign/calculate`, `/health`
 - Deploy: `cd Cartographer && make deploy`
 
-### SQLite + SQLCipher
-- Embedded database
-- Client-side encryption
-- FTS5 for full-text search
-- Network-accessible via SMB share
+### Turso (libSQL)
+- Cloud-hosted SQLite — accessible from any Mac, no local server
+- SOC 2 certified, encrypted at rest
+- Free tier sufficient for a personal practice
+- Auth tokens stored in macOS Keychain
 
 ### Obsidian Integration
 - YAML frontmatter as metadata source
@@ -180,11 +176,11 @@ macOS Tahoe uses the `.icon` format (authored in Icon Composer, ships with Xcode
 
 ## Development Workflow
 
-1. **Local Development**: Use M1 for coding, testing, debugging
-2. **Calculation Testing**: Docker container on 2018 Mini must be running
-3. **Database Migrations**: Use GRDB migrations, test on copy of production DB
+1. **Local Development**: Code and debug on any Mac
+2. **Calculation Testing**: Cartographer is live on Cloud Run; also runnable locally via `uvicorn`
+3. **Database Migrations**: Use GRDB migrations against a Turso dev database (separate from production)
 4. **UI Design**: Prototype in SwiftUI, reference Synthwave design system
-5. **Integration**: Test full flow with real Obsidian vault and network storage
+5. **Integration**: Test full flow with real Obsidian vault (iCloud-synced) and Turso dev DB
 
 ## File Structure Expectations
 
@@ -198,7 +194,6 @@ App/
 │   ├── Database/            # GRDB setup and queries
 │   └── Resources/           # Assets, design tokens
 ├── Cartographer/             # Python/FastAPI calculation engine (deployed to Cloud Run)
-├── WatcherService/           # FSEvents monitoring service
 └── Shared/                   # Shared models between components
 ```
 
