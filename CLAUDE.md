@@ -57,7 +57,7 @@ The app synthesizes five distinct symbolic lenses:
 ### Professional Features
 
 - **Reporting**: PDFKit renders branded PDF reports combining Blueprint (JSON) + Narrative (Markdown)
-- **Search**: FTS5 full-text search across entire esoteric corpus in milliseconds (network-hosted)
+- **Search**: FTS5 full-text search across entire esoteric corpus in milliseconds
 - **Redundancy**: Turso handles replication and backup automatically
 
 ## Data Flow
@@ -197,9 +197,9 @@ App/
 └── Shared/                   # Shared models between components
 ```
 
-## Related Repositories
+## Related
 
-- **the-ephemeris** - Obsidian knowledge vault (source data)
+- **Knowledge Base** - Obsidian vault (The Ephemeris + The Athenaeum), synced via iCloud at `~/Vibology/Knowledge Base`
 - **vibology-website** - Public-facing content
 
 ## Current Status
