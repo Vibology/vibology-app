@@ -70,6 +70,24 @@ Consult → App calls Cartographer (Cloud Run) for chart calculations
 Secure  → Client session data written to Turso (encrypted at rest, SOC 2)
 ```
 
+## Documentation Library
+
+**Always read the relevant reference file in `App/Documentation/` before writing code for that technology.** Do not rely solely on training data — these files contain project-specific APIs, confirmed field names, and usage patterns verified against the actual running system.
+
+| File | Use when working on |
+|------|-------------------|
+| `Cartographer-Reference.md` | Calling the API from Swift; `BlueprintResponse` models; endpoint contracts |
+| `SwiftUI-Reference.md` | SwiftUI views, modifiers, layout |
+| `SwiftUI-WhatsNew-macOS26.md` | macOS Tahoe / Xcode 26 specific APIs (Liquid Glass, `.icon` format, etc.) |
+| `GRDB-Reference.md` | Database queries, migrations, reactive observation |
+| `Combine-Reference.md` | Publishers, subscribers, data flow |
+| `Turso-libSQL-Reference.md` | Cloud database connection, auth tokens, SQL dialect |
+| `Security-Reference.md` | Keychain, encryption, privacy |
+| `PDFKit-Reference.md` | PDF report generation |
+| `CloudRun-Reference.md` | Deploying / configuring Cartographer |
+| `FastAPI-Reference.md` | Modifying Cartographer endpoints |
+| `pyswisseph-Reference.md` | Swiss Ephemeris internals |
+
 ## Development Guidelines
 
 ### Code Organization
