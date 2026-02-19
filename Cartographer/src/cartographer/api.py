@@ -17,7 +17,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import importlib.metadata
 
-from .routers import astrology, humandesign, synthesis, transits, composite
+from .routers import astrology, humandesign, synthesis, transits, composite, blueprint
 from .utils.version import get_version
 
 __version__ = get_version()
@@ -40,10 +40,14 @@ app = FastAPI(
 # CORS middleware for web clients
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://vibology.org",
+        "https://www.vibology.org",
+        "http://localhost:8080",   # local dev
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 # Include routers
@@ -52,6 +56,7 @@ app.include_router(humandesign.router, prefix="/humandesign", tags=["Human Desig
 app.include_router(transits.router, prefix="/transits", tags=["HD Transits"])
 app.include_router(composite.router, prefix="/composite", tags=["HD Relationships"])
 app.include_router(synthesis.router, prefix="/synthesis", tags=["Synthesis"])
+app.include_router(blueprint.router, prefix="/blueprint", tags=["Blueprint"])
 
 @app.get("/")
 async def root():

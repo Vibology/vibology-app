@@ -2,7 +2,8 @@
 Astrology Calculation Service - Kerykeion v5 wrapper
 """
 
-from kerykeion import AstrologicalSubject
+from kerykeion.astrological_subject_factory import AstrologicalSubjectFactory
+from kerykeion.aspects import AspectsFactory
 from datetime import datetime
 import pytz
 
@@ -23,8 +24,8 @@ def calculate_natal_chart(
 
     Returns dictionary with planets, houses, aspects, etc.
     """
-    # Create AstrologicalSubject
-    subject = AstrologicalSubject(
+    # Create AstrologicalSubjectModel via factory (offline — lat/lng/tz already resolved)
+    subject = AstrologicalSubjectFactory.from_birth_data(
         name=name,
         year=year,
         month=month,
@@ -33,7 +34,9 @@ def calculate_natal_chart(
         minute=minute,
         lat=lat,
         lng=lng,
-        tz_str=tz_str
+        tz_str=tz_str,
+        online=False,
+        houses_system_identifier=house_system,
     )
 
     # List of planets to extract
@@ -73,17 +76,20 @@ def calculate_natal_chart(
             if house:
                 houses_data[f"house_{i}"] = house.abs_pos
 
-    # Extract aspects (if available)
+    # Extract aspects via AspectsFactory
     aspects_data = []
-    if hasattr(subject, 'aspects_list'):
-        for aspect in subject.aspects_list:
+    try:
+        chart_aspects = AspectsFactory.single_chart_aspects(subject)
+        for aspect in chart_aspects.aspects:
             aspects_data.append({
-                "planet1": aspect.get('p1_name', ''),
-                "planet2": aspect.get('p2_name', ''),
-                "aspect": aspect.get('aspect', ''),
-                "orb": aspect.get('orbit', 0.0),
-                "applying": aspect.get('applying', False)
+                "planet1": aspect.p1_name,
+                "planet2": aspect.p2_name,
+                "aspect": aspect.aspect,
+                "orb": round(aspect.orbit, 4),
+                "applying": aspect.aspect_movement.lower() == "applying"
             })
+    except Exception:
+        pass
 
     # Calculate element and modality distribution
     elements = {"Fire": 0, "Earth": 0, "Air": 0, "Water": 0}
@@ -111,13 +117,16 @@ def calculate_natal_chart(
 
     # Lunar phase
     lunar_phase_data = {
-        "phase": "Unknown",
-        "illumination": 0
+        "degrees_between_s_m": 0.0,
+        "moon_phase": 0,
+        "moon_phase_name": "Unknown",
     }
-    if hasattr(subject, 'lunar_phase'):
+    if hasattr(subject, 'lunar_phase') and subject.lunar_phase is not None:
+        lp = subject.lunar_phase
         lunar_phase_data = {
-            "phase": subject.lunar_phase.get('moon_phase', 'Unknown'),
-            "illumination": subject.lunar_phase.get('illumination', 0)
+            "degrees_between_s_m": round(lp.degrees_between_s_m, 4),
+            "moon_phase": lp.moon_phase,
+            "moon_phase_name": lp.moon_phase_name,
         }
 
     return {
