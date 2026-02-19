@@ -1,0 +1,14 @@
+.gcloudignore
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+.DS_Store
+temp/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/

@@ -1,0 +1,8 @@
+.DS_Store
+nuget-cache/
+Cartographer/temp/
+Cartographer/__pycache__/
+Cartographer/**/__pycache__/
+Cartographer/.venv/
+Cartographer/*.egg-info/
+
