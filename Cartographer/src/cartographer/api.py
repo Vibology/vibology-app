@@ -82,9 +82,9 @@ async def health():
         "status": "operational",
         "version": __version__,
         "systems": {
-            "astrology": "kerykeion",
+            "astrology": "skyfield",
             "humandesign": "ihds",
-            "ephemeris": "swisseph"
+            "ephemeris": "skyfield"
         }
     }
 

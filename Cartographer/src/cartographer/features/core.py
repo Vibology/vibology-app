@@ -1,15 +1,20 @@
 from .. import hd_constants
-import swisseph  as swe  
-from IPython.display import display
-import pandas as pd
 import itertools
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 from pytz import timezone
 from multiprocessing import Pool
-from tqdm.contrib.concurrent import process_map
 import sys
+from ..services.ephemeris import (
+    birth_to_time,
+    time_to_jd,
+    jd_to_time,
+    time_to_utc_tuple,
+    get_ecliptic_longitude,
+    find_sun_crossing,
+    get_timescale,
+)
 from .attributes import (
     get_inc_cross,
     get_profile,
@@ -96,40 +101,35 @@ class hd_features:
         self.CHAKRA_LIST = hd_constants.CHAKRA_LIST
  
     def timestamp_to_juldate(self,*time_stamp):
-        ''' 
-        calculate julian date from given timestamp:
-            -uses swiss_ephemeris lib  www.astro.com #astrodienst
-            -if historic daylight time saving data is unknown may see below:
-                https://www.ietf.org/timezones/tzdb-2018f/tz-link.html
-        Args: 
-            self, timestamp(tuple): format: year,month,day,hour,minute,second,time_zone_offeset
-        Return: 
+        '''
+        calculate julian date from given timestamp.
+        Args:
+            self, timestamp(tuple): format: year,month,day,hour,minute,second,time_zone_offset
+        Return:
             julian date(float)
         '''
-        time_zone = swe.utc_time_zone(*self.time_stamp)
-        jdut = swe.utc_to_jd(*time_zone)
-
-        return jdut[1]
+        y, mo, d, h, mi, s, tz = self.time_stamp
+        t = birth_to_time(y, mo, d, h, mi, s, tz)
+        return time_to_jd(t)
     
     def calc_create_date(self,jdut):
-        ''' 
-        calculate creation date from birth data:
-            #->sun position -88° long, aprox. 3 months before (#source -> Ra Uru BlackBook)
-        For calculation swiss_ephemeris lib is used 
-        Args: 
+        '''
+        Calculate creation date from birth data:
+            Sun position -88° longitude, approx 3 months before birth.
+            (Source: Ra Uru BlackBook)
+        Args:
            julian date(float): timestamp in julian day format
-        Return: 
+        Return:
             creation date (float): timestamp in julian day format
         '''
-        design_pos = 88 
-        sun_long =  swe.calc_ut(jdut, swe.SUN)[0][0]
-        long = swe.degnorm(sun_long - design_pos) 
-        tstart = jdut - 100 #aproximation is start -100°
-        res = swe.solcross_ut(long, tstart)
-        create_date = swe.revjul(res)
-        create_julday = swe.julday(*create_date)
-        
-        return create_julday
+        design_pos = 88
+        birth_t = jd_to_time(jdut)
+        sun_long = get_ecliptic_longitude(birth_t, "Sun")
+        target_lon = (sun_long - design_pos) % 360.0
+        t_start = jd_to_time(jdut - 100)  # search window: ~100 days before birth
+        t_end = jd_to_time(jdut - 80)
+        result_t = find_sun_crossing(target_lon, t_start, t_end)
+        return time_to_jd(result_t)
     
     def date_to_gate(self,jdut,label):
         '''
@@ -159,17 +159,10 @@ class hd_features:
                                  "base"]
                       }
 
-        for idx,(planet,planet_code) in enumerate(self.SWE_PLANET_DICT.items()):
-            xx = swe.calc_ut(jdut,planet_code)
-            long = xx[0][0]
-            
-            #sun position is base of earth position
-            if planet =="Earth": 
-                long = (long+180) % 360 #Earth is in opp. pos., angles max 360°
+        t = jd_to_time(jdut)
 
-            #north node is base for south node position
-            elif planet == "South_Node":
-                long = (long+180) % 360 #North Node is in opp. pos.,angles max 360°
+        for idx, planet in enumerate(self.SWE_PLANET_DICT.keys()):
+            long = get_ecliptic_longitude(t, planet)
                 
             angle = (long + offset) % 360 #angles max 360°
             angle_percentage =angle/360 
@@ -209,7 +202,7 @@ class hd_features:
             for key in birth_planets.keys()
                             }
         self.date_to_gate_dict = date_to_gate_dict
-        self.create_date = swe.jdut1_to_utc(create_julday)[:-1]
+        self.create_date = time_to_utc_tuple(jd_to_time(create_julday))[:-1]
         
         return date_to_gate_dict
     
@@ -232,49 +225,22 @@ class hd_features:
         Calculate the Julian date of the Solar Return for a specific year.
         Args:
            jdut (float): Julian date of birth.
-           year_offset (int): Year offset from birth (0 for the current SR since birth).
+           year_offset (int): Year offset from birth (0 for the next SR after birth date).
         Return:
             sr_julian_day (float): Julian date of the Solar Return.
         '''
-        # 1. Convert birth Julian Date back to UTC time components
-        # Note: If year_offset is 0, swisseph finds the *next* return after the birth date.
-        # If year_offset > 0, we estimate the JD start search to find the correct SR.
-        
-        # Determine the year to start the search from (beginning of the target SR year)
-        # revjul returns (y, m, d, h_decimal)
-        year, month, day, hour_decimal = swe.revjul(jdut)
-        
-        # Convert decimal hour to h, m, s for datetime
-        hour = int(hour_decimal)
-        minute_float = (hour_decimal - hour) * 60
-        minute = int(minute_float)
-        second = int((minute_float - minute) * 60)
-        
-        dt_start = datetime(int(year), int(month), int(day), int(hour), int(minute), int(second))
-        
+        birth_t = jd_to_time(jdut)
+        y, mo, d, h, mi, s = time_to_utc_tuple(birth_t)
+        dt_start = datetime(int(y), int(mo), int(d), int(h), int(mi), int(s))
+
         target_year = dt_start.year + year_offset
-        # Start search from the beginning of the target calendar year
-        target_year_start_dt = datetime(target_year, 1, 1, 0, 0, 0)
-        
-        # Convert to decimal hour for swe.julday
-        hour_dec = target_year_start_dt.hour + target_year_start_dt.minute/60.0 + target_year_start_dt.second/3600.0
-        
-        target_year_start_jd = swe.julday(
-            target_year_start_dt.year, target_year_start_dt.month, target_year_start_dt.day, 
-            hour_dec
-        )
+        # Search from Jan 1 of target year
+        search_start = get_timescale().utc(target_year, 1, 1)
+        search_end = get_timescale().utc(target_year + 1, 1, 1)
 
-        # 3. Calculate Natal Sun Longitude
-        # Use FLG_SWIEPH (default) or whatever flag is appropriate.
-        # swe.SUN is 0
-        natal_sun_res = swe.calc_ut(jdut, swe.SUN)
-        natal_sun_lon = natal_sun_res[0][0]
-
-        # 4. Use swe.solcross_ut to find when Sun returns to this longitude
-        # It searches forward from target_year_start_jd
-        sr_jdut = swe.solcross_ut(natal_sun_lon, target_year_start_jd)
-        
-        return sr_jdut
+        natal_sun_lon = get_ecliptic_longitude(birth_t, "Sun")
+        result_t = find_sun_crossing(natal_sun_lon, search_start, search_end)
+        return time_to_jd(result_t)
 
     def get_solar_return_date(self, year_offset):
         '''
@@ -282,19 +248,8 @@ class hd_features:
         '''
         birth_julday = self.timestamp_to_juldate(self.time_stamp)
         sr_julday = self.calc_solar_return_jd(birth_julday, year_offset)
-        
-        # swe.jdut1_to_utc returns (year, month, day, hour, minute, second)
-        # We take all 6 values
-        sr_utc_date_tuple = swe.jdut1_to_utc(sr_julday)
-        # Round seconds to integer if needed, or keep as is.
-        # Ensure we have 6 elements for API.
-        if len(sr_utc_date_tuple) >= 6:
-             sr_utc_date_tuple = sr_utc_date_tuple[:6]
-        else:
-             # Fallback if fewer elements
-             sr_utc_date_tuple = tuple(list(sr_utc_date_tuple) + [0]*(6-len(sr_utc_date_tuple)))
-
-        return sr_utc_date_tuple    
+        sr_utc_date_tuple = time_to_utc_tuple(jd_to_time(sr_julday))
+        return sr_utc_date_tuple[:6]
 
     
 def calc_single_hd_features(timestamp,report=False,channel_meaning=False,day_chart_only=False):
@@ -355,8 +310,8 @@ def calc_single_hd_features(timestamp,report=False,channel_meaning=False,day_cha
                 print("active chakras: {}".format(active_chakras))
                 print("definition: {}".format(definition))
                 print("variables: {}".format(variables))
-                display(pd.DataFrame(date_to_gate_dict))
-                display(pd.DataFrame(active_channels_dict))
+                print(date_to_gate_dict)
+                print(active_channels_dict)
          
     if not day_chart_only:
         return  typ,auth,inc_cross,inc_cross_typ,profile,definition,date_to_gate_dict,active_chakras,active_channels_dict, bdate, cdate, variables

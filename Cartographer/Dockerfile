@@ -4,28 +4,28 @@ FROM python:3.11-slim AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libffi-dev \
-    pkg-config \
-    libcairo2-dev \
-    libpango1.0-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 COPY requirements.txt pyproject.toml ./
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
+# Pre-download the JPL DE440s ephemeris so Cloud Run containers don't fetch it
+# at request time. ~32 MB, public domain, covers 1849–2150.
+# Packages are under /install (not the default site-packages), so we expose them
+# via PYTHONPATH before running Python.
+RUN mkdir -p /data/ephemeris && \
+    PYTHONPATH=$(find /install -name 'site-packages' -type d | head -1) \
+    python -c "from skyfield.api import Loader; load = Loader('/data/ephemeris'); load('de440s.bsp')"
+
 # ── Stage 2: runtime ──────────────────────────────────────────────────────────
 FROM python:3.11-slim
 
-# Runtime-only native libs required by cairosvg
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libcairo2 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libgdk-pixbuf-2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
 # Copy installed Python packages from builder
 COPY --from=builder /install /usr/local
+
+# Copy pre-downloaded ephemeris data
+COPY --from=builder /data/ephemeris /data/ephemeris
 
 WORKDIR /app
 COPY src/ ./src/
@@ -33,8 +33,8 @@ COPY src/ ./src/
 # cartographer package lives under src/
 ENV PYTHONPATH=/app/src
 
-# Use headless matplotlib backend — no display available in Cloud Run
-ENV MPLBACKEND=Agg
+# Skyfield ephemeris path — matches what was downloaded in builder
+ENV SKYFIELD_EPHEMERIS_PATH=/data/ephemeris
 
 # Cloud Run injects PORT at runtime; default to 8080 for local docker runs
 ENV PORT=8080

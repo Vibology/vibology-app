@@ -3,7 +3,7 @@ from .. import hd_constants
 import numpy as np
 from datetime import datetime
 from .geolocation import get_latitude_longitude, tf
-import swisseph as swe
+from .ephemeris import get_ecliptic_longitude, jd_to_time
 import pytz
 from ..schemas.response_models import EnvironmentalResonanceDetail, VariableSynergyDetail
 
@@ -339,9 +339,10 @@ def get_lunar_phase_flag(jd):
     Calculates lunar context for Reflector-heavy or high-sensitivity interpretation.
     """
     try:
-        res = swe.calc_ut(jd, swe.MOON)[0][0] # longitude
-        sun_res = swe.calc_ut(jd, swe.SUN)[0][0]
-        diff = (res - sun_res) % 360
+        t = jd_to_time(jd)
+        moon_lon = get_ecliptic_longitude(t, "Moon")
+        sun_lon = get_ecliptic_longitude(t, "Sun")
+        diff = (moon_lon - sun_lon) % 360
         if diff < 45:
             return "New Moon Phase (Initiation)"
         if diff < 90:
@@ -725,12 +726,7 @@ def process_hybrid_analysis(participants, group_type="family", verbosity="all"):
     # 4. Meta & Final Response (10x Enhancement)
     from datetime import datetime
     
-    # Get pyswisseph version if possible, or swisseph lib version
-    # swe.swe_version() might require path/args. swe.version() isn't standard function name in pyswisseph 2.x?
-    # Actually `swe` module from pyswisseph doesn't always expose version string easy.
-    # But `swe.swe_calc_ut` relies on underlying dll.
-    # We'll hardcode "pyswisseph" and dynamic timestamp for now or try-catch version.
-    ephemeris_ver = "SwissEph (pyswisseph)" 
+    ephemeris_ver = "Skyfield/de440s"
     
     meta = {
         "engine": "Maia-Penta v2.0",

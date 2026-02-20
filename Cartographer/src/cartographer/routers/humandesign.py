@@ -7,12 +7,11 @@ import json
 from .. import features as hd
 from .. import hd_constants
 from ..utils import serialization as cj
-from ..services import chart_renderer as chart
 from ..services.geolocation import get_latitude_longitude, tf
 from ..dependencies import verify_token
 from ..utils.date_utils import clean_birth_date_to_iso, clean_create_date_to_iso
 from ..schemas.general import HealthResponse
-from ..utils.health_utils import check_swisseph_health
+from ..utils.health_utils import check_ephemeris_health
 from datetime import datetime
 
 router = APIRouter()
@@ -26,7 +25,7 @@ def health_check():
         "version": __version__,
         "timestamp": datetime.now().isoformat(),
         "dependencies": {
-            "pyswisseph": check_swisseph_health()
+            "ephemeris": check_ephemeris_health()
         }
     }
 
@@ -197,16 +196,13 @@ def get_bodygraph_image(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error formatting data for chart: {e}")
         
-    # 6. Generate Image
-    try:
-        img_bytes = chart.generate_bodygraph_image(final_result, fmt=fmt)
-        if fmt == 'svg':
-            media_type = "image/svg+xml"
-        elif fmt in ['jpg', 'jpeg']:
-            media_type = "image/jpeg"
-        else:
-            media_type = "image/png"
-
-        return Response(content=img_bytes, media_type=media_type)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating chart image: {e}")
+    return JSONResponse(
+        status_code=501,
+        content={
+            "detail": (
+                "Bodygraph image rendering has been removed. "
+                "Use GET /humandesign/calculate to get chart data as JSON "
+                "and render the bodygraph natively in the client."
+            )
+        },
+    )

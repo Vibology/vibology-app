@@ -82,64 +82,15 @@ async def synthesize_complete_chart(request: SynthesisRequest):
 @router.post("/charts")
 async def generate_both_charts(request: SynthesisRequest):
     """
-    Generate both natal chart (astrology) and bodygraph (HD) visualizations.
+    Chart image rendering is not available.
 
-    Returns:
-    - Base64-encoded astrology chart (PNG)
-    - Base64-encoded bodygraph (SVG)
+    Use POST /synthesis/complete to get both astrology and Human Design data as JSON,
+    then render charts natively in the client.
     """
-    try:
-        from ..services.astro_renderer import render_natal_chart
-        from ..services.hd_renderer import render_bodygraph
-        import base64
-
-        # Generate astrology chart
-        astro_chart, _ = render_natal_chart(
-            name=request.name,
-            year=request.year,
-            month=request.month,
-            day=request.day,
-            hour=request.hour,
-            minute=request.minute,
-            lat=request.lat,
-            lng=request.lng,
-            tz_str=request.tz_str,
-            output_format="png",
-            house_system=request.house_system
-        )
-
-        # Generate HD bodygraph
-        from ..services.chart_renderer import generate_chart_svg
-        from ..services.geolocation import get_latitude_longitude
-
-        if hasattr(request, 'place') and request.place:
-            coords = get_latitude_longitude(request.place)
-            lat, lng = coords[0], coords[1]
-        else:
-            lat, lng = request.lat, request.lng
-
-        hd_chart_data = hd.get_bodygraph(
-            name=request.name,
-            year=request.year,
-            month=request.month,
-            day=request.day,
-            hour=request.hour,
-            minute=request.minute,
-            lat=lat,
-            lng=lng,
-            tz_str=request.tz_str
-        )
-        bodygraph_svg = generate_chart_svg(hd_chart_data)
-
-        return {
-            "astrology_chart": {
-                "format": "png",
-                "data": base64.b64encode(astro_chart).decode('utf-8')
-            },
-            "bodygraph": {
-                "format": "svg",
-                "data": base64.b64encode(bodygraph_svg.encode('utf-8')).decode('utf-8')
-            }
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    raise HTTPException(
+        status_code=501,
+        detail=(
+            "Chart image rendering has been removed. "
+            "Use POST /synthesis/complete to get JSON data and render charts client-side."
+        ),
+    )

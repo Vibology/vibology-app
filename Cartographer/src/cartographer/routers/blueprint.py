@@ -157,7 +157,7 @@ async def calculate_blueprint(request: BlueprintRequest):
         "coordinates": {"lat": round(lat, 4), "lon": round(lon, 4)},
         "timezone": timezone_str,
         "calculation_timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "engine": "cartographer/pyswisseph",
+        "engine": "cartographer/skyfield",
     }
 
     # 7. Build astrology section
