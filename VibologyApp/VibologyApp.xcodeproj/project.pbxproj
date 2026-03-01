@@ -1,0 +1,334 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AA000001000000000000001A /* VibologyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002000000000000001A /* VibologyApp.swift */; };
+		AA000001000000000000002A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002000000000000002A /* ContentView.swift */; };
+		AA000001000000000000003A /* BlueprintModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002000000000000003A /* BlueprintModels.swift */; };
+		AA000001000000000000004A /* BodygraphLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002000000000000004A /* BodygraphLayout.swift */; };
+		AA000001000000000000005A /* BodygraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002000000000000005A /* BodygraphView.swift */; };
+		AA000001000000000000006A /* SVGPathParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002000000000000008A /* SVGPathParser.swift */; };
+		AA000001000000000000007A /* layout_data.json in Resources */ = {isa = PBXBuildFile; fileRef = AA000002000000000000009A /* layout_data.json */; };
+		AA00000100000000000000AA /* LocationSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000AA /* LocationSearchService.swift */; };
+		AA00000100000000000000BA /* CartographerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000BA /* CartographerService.swift */; };
+		AA00000100000000000000CA /* BlueprintViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000CA /* BlueprintViewModel.swift */; };
+		AA00000100000000000000DA /* BirthDataInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000DA /* BirthDataInputView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AA000002000000000000001A /* VibologyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibologyApp.swift; sourceTree = "<group>"; };
+		AA000002000000000000002A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AA000002000000000000003A /* BlueprintModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintModels.swift; sourceTree = "<group>"; };
+		AA000002000000000000004A /* BodygraphLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodygraphLayout.swift; sourceTree = "<group>"; };
+		AA000002000000000000005A /* BodygraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodygraphView.swift; sourceTree = "<group>"; };
+		AA000002000000000000006A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AA000002000000000000007A /* Vibology.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vibology.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA000002000000000000008A /* SVGPathParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SVGPathParser.swift; sourceTree = "<group>"; };
+		AA000002000000000000009A /* layout_data.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = layout_data.json; sourceTree = "<group>"; };
+		AA00000200000000000000AA /* LocationSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchService.swift; sourceTree = "<group>"; };
+		AA00000200000000000000BA /* CartographerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartographerService.swift; sourceTree = "<group>"; };
+		AA00000200000000000000CA /* BlueprintViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintViewModel.swift; sourceTree = "<group>"; };
+		AA00000200000000000000DA /* BirthDataInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthDataInputView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AA000003000000000000001A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AA000004000000000000001A /* root */ = {
+			isa = PBXGroup;
+			children = (
+				AA000004000000000000003A /* Sources */,
+				AA000004000000000000002A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AA000004000000000000002A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA000002000000000000007A /* Vibology.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA000004000000000000003A /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				AA000004000000000000004A /* App */,
+				AA000004000000000000005A /* Models */,
+				AA000004000000000000006A /* Views */,
+				AA00000400000000000000BA /* Services */,
+				AA00000400000000000000CA /* ViewModels */,
+				AA000004000000000000008A /* Resources */,
+				AA000002000000000000006A /* Info.plist */,
+			);
+			name = Sources;
+			path = "Sources/VibologyApp";
+			sourceTree = "<group>";
+		};
+		AA000004000000000000004A /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AA000002000000000000001A /* VibologyApp.swift */,
+				AA000002000000000000002A /* ContentView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		AA000004000000000000005A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AA000002000000000000003A /* BlueprintModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		AA000004000000000000006A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AA000004000000000000007A /* Blueprint */,
+				AA00000200000000000000DA /* BirthDataInputView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		AA000004000000000000007A /* Blueprint */ = {
+			isa = PBXGroup;
+			children = (
+				AA000002000000000000004A /* BodygraphLayout.swift */,
+				AA000002000000000000005A /* BodygraphView.swift */,
+				AA000002000000000000008A /* SVGPathParser.swift */,
+			);
+			path = Blueprint;
+			sourceTree = "<group>";
+		};
+		AA000004000000000000008A /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AA000002000000000000009A /* layout_data.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		AA00000400000000000000BA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000200000000000000AA /* LocationSearchService.swift */,
+				AA00000200000000000000BA /* CartographerService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AA00000400000000000000CA /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000200000000000000CA /* BlueprintViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AA000005000000000000001A /* Vibology */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA000008000000000000002A /* Build configuration list for PBXNativeTarget "Vibology" */;
+			buildPhases = (
+				AA000003000000000000002A /* Sources */,
+				AA000003000000000000001A /* Frameworks */,
+				AA000003000000000000003A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Vibology;
+			productName = Vibology;
+			productReference = AA000002000000000000007A /* Vibology.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA000006000000000000001A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1700;
+				LastUpgradeCheck = 1700;
+				TargetAttributes = {
+					AA000005000000000000001A = {
+						CreatedOnToolsVersion = 17.0;
+					};
+				};
+			};
+			buildConfigurationList = AA000008000000000000001A /* Build configuration list for PBXProject "VibologyApp" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AA000004000000000000001A;
+			productRefGroup = AA000004000000000000002A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AA000005000000000000001A /* Vibology */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AA000003000000000000003A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000007A /* layout_data.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AA000003000000000000002A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000001A /* VibologyApp.swift in Sources */,
+				AA000001000000000000002A /* ContentView.swift in Sources */,
+				AA000001000000000000003A /* BlueprintModels.swift in Sources */,
+				AA000001000000000000004A /* BodygraphLayout.swift in Sources */,
+				AA000001000000000000005A /* BodygraphView.swift in Sources */,
+				AA000001000000000000006A /* SVGPathParser.swift in Sources */,
+				AA00000100000000000000AA /* LocationSearchService.swift in Sources */,
+				AA00000100000000000000BA /* CartographerService.swift in Sources */,
+				AA00000100000000000000CA /* BlueprintViewModel.swift in Sources */,
+				AA00000100000000000000DA /* BirthDataInputView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AA000007000000000000001A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AA000007000000000000002A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		AA000007000000000000003A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Sources/VibologyApp/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vibology.app;
+				PRODUCT_NAME = Vibology;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		AA000007000000000000004A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "Sources/VibologyApp/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vibology.app;
+				PRODUCT_NAME = Vibology;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AA000008000000000000001A /* Build configuration list for PBXProject "VibologyApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000007000000000000001A /* Debug */,
+				AA000007000000000000002A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA000008000000000000002A /* Build configuration list for PBXNativeTarget "Vibology" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA000007000000000000003A /* Debug */,
+				AA000007000000000000004A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = AA000006000000000000001A /* Project object */;
+}

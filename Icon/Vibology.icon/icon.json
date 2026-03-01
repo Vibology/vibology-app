@@ -4,6 +4,7 @@
     {
       "layers" : [
         {
+          "glass" : false,
           "image-name" : "icon-gradient-1600-saturated.png",
           "name" : "icon-gradient-1600-saturated",
           "position" : {

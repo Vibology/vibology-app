@@ -1,5 +1,13 @@
 # Vibology MacOS Application
 
+## The Governing Vision
+
+**"The mythology of you."**
+
+Vibology exists to help each person see the shape of their own story — the archetypal patterns living through them, legible across multiple instruments, irreducible to any single system. This is neither generic esoteric practice (impersonal, predictive) nor clinical psychology (diagnostic, pathological). It is depth-informed symbolic consultation: the universal made personal, the mythological made navigable.
+
+Every instrument, every reading, every synthesis is in service of this. The archetypal lens is not one approach among several — it is the governing orientation of the entire practice.
+
 ## Project Overview
 
 Vibology is a native macOS application that synthesizes five symbolic instruments (Astrology, Human Design, Personal Mythos, Tarot, and The Astrolabe) into a unified framework for consultation sessions and personal exploration. It bridges technical calculation with esoteric wisdom through a client-server architecture.
@@ -10,7 +18,7 @@ Vibology is a native macOS application that synthesizes five symbolic instrument
 
 | Layer | Component | Implementation |
 |-------|-----------|----------------|
-| **Calculation** | Headless Engine | Python/FastAPI (Cartographer) on Google Cloud Run with pyswisseph |
+| **Calculation** | Headless Engine | Python/FastAPI (Cartographer) on Google Cloud Run with Skyfield/JPL DE440s |
 | **Research** | The Ephemeris | Obsidian (Markdown) with YAML frontmatter, synced via iCloud |
 | **Interface** | Native Client | SwiftUI for macOS with Glassmorphism/Synthwave aesthetics |
 | **Database** | Persistent Store | Turso (cloud-hosted libSQL/SQLite) — client data + Ephemeris index |
@@ -42,7 +50,7 @@ When a note changes on disk, the app re-queries Turso's index and refreshes.
 The app synthesizes five distinct symbolic lenses:
 
 1. **Astrology** - Planetary timing via Cartographer calculation engine
-2. **Human Design** - Mechanical imprinting via pyswisseph
+2. **Human Design** - Mechanical imprinting via Skyfield/JPL DE440s
 3. **Personal Mythos** - Psychological narrative from Obsidian notes
 4. **The Tarot** - Qabalistic archetypes via Correspondence Index
 5. **The Astrolabe** - Contemporary oracle resonance (I Ching/Gene Keys)
@@ -84,6 +92,12 @@ Secure  → Client session data written to Turso (encrypted at rest, SOC 2)
 | `Turso-libSQL-Reference.md` | Cloud database connection, auth tokens, SQL dialect |
 | `Security-Reference.md` | Keychain, encryption, privacy |
 | `PDFKit-Reference.md` | PDF report generation |
+| `FoundationModels-Reference.md` | Apple Intelligence — `LanguageModelSession`, `@Generable`, `@Guide`, synthesis generation |
+| `FSEvents-Reference.md` | Watching the Obsidian vault (iCloud path) for file changes |
+| `URLSession-Reference.md` | Async HTTP calls to Cartographer; JSON encoding/decoding patterns |
+| `AttributedString-Reference.md` | Rendering Obsidian markdown notes in SwiftUI; wiki-link and footnote handling |
+| `Observation-Reference.md` | `@Observable` macro, ViewModels, `@Bindable`, thread safety, migration from `ObservableObject` |
+| `Entitlements-Reference.md` | App Sandbox (disabled), Hardened Runtime, code signing, notarization |
 | `CloudRun-Reference.md` | Deploying / configuring Cartographer |
 | `FastAPI-Reference.md` | Modifying Cartographer endpoints |
 | `pyswisseph-Reference.md` | Swiss Ephemeris internals |
@@ -176,9 +190,12 @@ macOS Tahoe uses the `.icon` format (authored in Icon Composer, ships with Xcode
 ### Docker + Python/FastAPI (Cartographer)
 - Calculation engine isolated in container, deployed to Cloud Run
 - REST API for astrology and Human Design calculations
-- pyswisseph for Swiss Ephemeris precision
-- Endpoints: `/chart/natal`, `/humandesign/calculate`, `/health`
+- Skyfield + JPL DE440s ephemeris (MIT/public domain — no AGPL obligation)
+- Key endpoints: `POST /blueprint`, `POST /astrology/calculate`, `GET /health`
 - Deploy: `cd Cartographer && make deploy`
+- Live URL: `https://cartographer-273583413962.us-central1.run.app`
+
+**Chart rendering:** Server-side image generation has been removed. All chart visualization is done natively in the SwiftUI app (HD Bodygraph and Astrology Wheel rendered with SwiftUI Canvas). No web chart renderer exists yet — the app is the design reference; a JS port may follow later.
 
 ### Turso (libSQL)
 - Cloud-hosted SQLite — accessible from any Mac, no local server
