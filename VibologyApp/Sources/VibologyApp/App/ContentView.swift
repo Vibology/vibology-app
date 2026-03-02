@@ -20,13 +20,21 @@ struct ContentView: View {
                 .frame(minWidth: 360, minHeight: 500)
 
             case .loaded(let hdData):
-                BodygraphView(data: hdData)
-                    .frame(minWidth: 360, idealWidth: 480, minHeight: 500)
-                    .toolbar {
-                        ToolbarItem(placement: .primaryAction) {
-                            Button("New Chart") { vm.reset() }
-                        }
+                GeometryReader { geo in
+                    let scale = max(0.6, geo.size.height / 700.0)
+                    HStack(alignment: .top, spacing: 8) {
+                        PlanetColumnView(planets: hdData.planets.design,      isDesign: true,  scale: scale)
+                        BodygraphView(data: hdData, scale: scale)
+                        PlanetColumnView(planets: hdData.planets.personality, isDesign: false, scale: scale)
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .frame(minWidth: 620, idealWidth: 760, minHeight: 500)
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("New Chart") { vm.reset() }
+                    }
+                }
             }
         }
         .padding()

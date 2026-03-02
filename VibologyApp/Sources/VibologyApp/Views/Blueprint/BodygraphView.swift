@@ -78,6 +78,7 @@ private func pointOnPath(_ path: Path, at t: CGFloat) -> CGPoint {
 
 struct BodygraphView: View {
     let data: HumanDesignData
+    var scale: CGFloat = 1.0
     // MARK: - Derived state
 
     private var personalityGateSet: Set<Int> {
@@ -374,15 +375,18 @@ struct BodygraphView: View {
                     guard let rawPath = layout.channelPaths[svgID] else { continue }
                     let p         = rawPath.applying(xform)
                     let startGate = pathStartGate(svgID: svgID, rawPath: rawPath, layout: layout)
-                    let halfPath: Path = (info.gate == startGate)
+                    let gateAtStart = (info.gate == startGate)
+                    let halfPath: Path = gateAtStart
                         ? p.trimmedPath(from: 0.0, to: 0.5)
                         : p.trimmedPath(from: 0.5, to: 1.0)
                     let color: Color = info.isPersonality ? .channelOn : .channelDesign
 
                     for offset in [0.0, 0.25, 0.5, 0.75] {
-                        let t    = CGFloat((elapsed * speed + offset).truncatingRemainder(dividingBy: 1.0))
-                        let pt   = pointOnPath(halfPath, at: t)
-                        let fade = min(t / 0.07, 1.0) * min((1.0 - t) / 0.07, 1.0)
+                        let t     = CGFloat((elapsed * speed + offset).truncatingRemainder(dividingBy: 1.0))
+                        // Always travel gate→outward: reverse path position when gate is at path end
+                        let pathT = gateAtStart ? t : (1.0 - t)
+                        let pt    = pointOnPath(halfPath, at: pathT)
+                        let fade  = min(t / 0.07, 1.0) * min((1.0 - t) / 0.07, 1.0)
                         ctx.fill(Path(ellipseIn: CGRect(x: pt.x - bloomR,    y: pt.y - bloomR,
                                                         width: bloomR * 2,    height: bloomR * 2)),
                                  with: .color(color.opacity(0.20 * fade)))
@@ -448,6 +452,9 @@ struct BodygraphView: View {
 
             // 7 ─ Type/authority overlay
             typeOverlay
+
+            // 8 ─ Variable arrows (top region, above body shoulders)
+            variablesOverlay
         }
         .aspectRatio(1500.0 / 2169.0, contentMode: .fit)
         .background(Color.bgDeep)
@@ -510,6 +517,41 @@ struct BodygraphView: View {
                     .foregroundStyle(textColor)
                 ctx.draw(ctx.resolve(label), at: centre)
             }
+        }
+    }
+
+    // MARK: - Type Overlay
+
+    // MARK: - Variables Overlay
+
+    private var variablesOverlay: some View {
+        let cyan     = Color(red: 0.298, green: 0.788, blue: 0.941)
+        let magenta  = Color(red: 1.000, green: 0.220, blue: 0.702)
+        let vars     = data.variables
+        let fontSize = max(10.0, 14.0 * scale)
+        let arrowGap = max(6.0,  10.0 * scale)
+        return VStack(spacing: 0) {
+            HStack(alignment: .top, spacing: 0) {
+                // Design — left (magenta)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(vars.topLeft?.value    == "left" ? "<-" : "->")
+                    Text(vars.bottomLeft?.value == "left" ? "<-" : "->")
+                        .padding(.top, arrowGap)
+                }
+                .foregroundStyle(magenta)
+                Spacer()
+                // Personality — right (cyan)
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text(vars.topRight?.value    == "left" ? "<-" : "->")
+                    Text(vars.bottomRight?.value == "left" ? "<-" : "->")
+                        .padding(.top, arrowGap)
+                }
+                .foregroundStyle(cyan)
+            }
+            .font(.system(size: fontSize, weight: .bold, design: .monospaced))
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            Spacer()
         }
     }
 
