@@ -19,6 +19,7 @@
 		AA00000100000000000000CA /* BlueprintViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000CA /* BlueprintViewModel.swift */; };
 		AA00000100000000000000DA /* BirthDataInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000DA /* BirthDataInputView.swift */; };
 		AA00000100000000000000EA /* PlanetTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000EA /* PlanetTableView.swift */; };
+		AA00000100000000000000FA /* AstrologyWheelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000FA /* AstrologyWheelView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,7 @@
 		AA00000200000000000000CA /* BlueprintViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintViewModel.swift; sourceTree = "<group>"; };
 		AA00000200000000000000DA /* BirthDataInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthDataInputView.swift; sourceTree = "<group>"; };
 		AA00000200000000000000EA /* PlanetTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanetTableView.swift; sourceTree = "<group>"; };
+		AA00000200000000000000FA /* AstrologyWheelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AstrologyWheelView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +115,7 @@
 				AA000002000000000000005A /* BodygraphView.swift */,
 				AA000002000000000000008A /* SVGPathParser.swift */,
 				AA00000200000000000000EA /* PlanetTableView.swift */,
+				AA00000200000000000000FA /* AstrologyWheelView.swift */,
 			);
 			path = Blueprint;
 			sourceTree = "<group>";
@@ -222,6 +225,7 @@
 				AA00000100000000000000CA /* BlueprintViewModel.swift in Sources */,
 				AA00000100000000000000DA /* BirthDataInputView.swift in Sources */,
 				AA00000100000000000000EA /* PlanetTableView.swift in Sources */,
+				AA00000100000000000000FA /* AstrologyWheelView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -6,7 +6,7 @@ import Observation
 enum BlueprintState {
     case input
     case loading
-    case loaded(HumanDesignData)
+    case loaded(BlueprintResponse)
     case error(String)
 }
 
@@ -82,7 +82,7 @@ final class BlueprintViewModel {
         state = .loading
         do {
             let response = try await CartographerService.shared.blueprint(req)
-            state = .loaded(response.humanDesign)
+            state = .loaded(response)
         } catch is CancellationError {
             state = .input
         } catch {
