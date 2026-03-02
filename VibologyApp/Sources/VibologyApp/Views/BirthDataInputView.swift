@@ -4,10 +4,9 @@ struct BirthDataInputView: View {
     @Bindable var vm: BlueprintViewModel
     @State private var locationService = LocationSearchService()
     @FocusState private var focused: Field?
-    @State private var suppressCitySearch = false
-    @State private var suppressCountrySearch = false
+    @State private var suppressPlaceSearch = false
 
-    enum Field: Hashable { case name, date, time, country }
+    enum Field: Hashable { case name, date, time, place }
 
     private var errorMessage: String? {
         guard case .error(let msg) = vm.state else { return nil }
@@ -105,42 +104,23 @@ struct BirthDataInputView: View {
                 TextField("HH:MM", text: $vm.timeText)
                     .focused($focused, equals: .time)
                     .onChange(of: vm.timeText) { _, new in vm.timeText = maskedTime(new) }
-                    .onSubmit { focused = .country }
+                    .onSubmit { focused = .place }
             }
 
-            // Country
-            LabeledField("Country") {
+            // Place
+            LabeledField("Place") {
                 VStack(alignment: .leading, spacing: 0) {
-                    TextField("Country", text: $vm.country)
-                        .focused($focused, equals: .country)
-                        .onChange(of: vm.country) { _, _ in
-                            guard !suppressCountrySearch else { suppressCountrySearch = false; return }
-                            vm.updateCountrySuggestions()
-                        }
-                        .onSubmit { vm.countrySuggestions = [] }
-                    if !vm.countrySuggestions.isEmpty {
-                        SuggestionList(items: vm.countrySuggestions.map { PlaceSuggestion(title: $0, subtitle: "") }) { s in
-                            suppressCountrySearch = true
-                            vm.country = s.title
-                            vm.countrySuggestions = []
-                        }
-                    }
-                }
-            }
-
-            // City / State
-            LabeledField("City / State") {
-                VStack(alignment: .leading, spacing: 0) {
-                    TextField("City", text: $vm.city)
-                        .onChange(of: vm.city) { _, new in
-                            guard !suppressCitySearch else { suppressCitySearch = false; return }
-                            locationService.search(new, country: vm.country)
+                    TextField("City, Country", text: $vm.place)
+                        .focused($focused, equals: .place)
+                        .onChange(of: vm.place) { _, new in
+                            guard !suppressPlaceSearch else { suppressPlaceSearch = false; return }
+                            locationService.search(new, country: "")
                         }
                         .onSubmit { locationService.clear() }
                     if !locationService.suggestions.isEmpty {
                         SuggestionList(items: locationService.suggestions) { s in
-                            suppressCitySearch = true
-                            vm.city = s.title
+                            suppressPlaceSearch = true
+                            vm.place = s.display
                             locationService.clear()
                         }
                     }

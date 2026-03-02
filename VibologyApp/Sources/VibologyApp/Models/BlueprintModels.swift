@@ -11,8 +11,14 @@ struct BlueprintRequest: Encodable {
     let minute: Int
     let second: Int
     let place: String
+    let houseSystem: String
 
-    init(name: String, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int = 0, place: String) {
+    enum CodingKeys: String, CodingKey {
+        case name, year, month, day, hour, minute, second, place
+        case houseSystem = "house_system"
+    }
+
+    init(name: String, year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int = 0, place: String, houseSystem: String = "P") {
         self.name = name
         self.year = year
         self.month = month
@@ -21,12 +27,13 @@ struct BlueprintRequest: Encodable {
         self.minute = minute
         self.second = second
         self.place = place
+        self.houseSystem = houseSystem
     }
 }
 
 // MARK: - Response Root
 
-struct BlueprintResponse: Decodable {
+struct BlueprintResponse: Codable {
     let meta: BlueprintMeta
     let astrology: AstrologyData
     let humanDesign: HumanDesignData
@@ -34,7 +41,7 @@ struct BlueprintResponse: Decodable {
 
 // MARK: - Meta
 
-struct BlueprintMeta: Decodable {
+struct BlueprintMeta: Codable {
     let name: String
     let birthDate: String
     let birthTime: String
@@ -45,7 +52,7 @@ struct BlueprintMeta: Decodable {
     let timezone: String
     let calculationTimestamp: String
 
-    struct Coordinates: Decodable {
+    struct Coordinates: Codable {
         let lat: Double
         let lon: Double
     }
@@ -53,7 +60,7 @@ struct BlueprintMeta: Decodable {
 
 // MARK: - Astrology
 
-struct AstrologyData: Decodable {
+struct AstrologyData: Codable {
     let planets: [String: PlanetData]
     let houses: [String: Double]
     let aspects: [AspectData]
@@ -62,7 +69,7 @@ struct AstrologyData: Decodable {
     let modalities: [String: Int]
 }
 
-struct PlanetData: Decodable {
+struct PlanetData: Codable {
     let sign: String
     let longitude: Double
     let latitude: Double?
@@ -71,7 +78,7 @@ struct PlanetData: Decodable {
     let house: Int
 }
 
-struct AspectData: Decodable {
+struct AspectData: Codable {
     let planet1: String
     let planet2: String
     let aspect: String
@@ -79,7 +86,7 @@ struct AspectData: Decodable {
     let applying: Bool
 }
 
-struct LunarPhase: Decodable {
+struct LunarPhase: Codable {
     let degreesBetweenSM: Double
     let moonPhase: Int
     let moonPhaseName: String
@@ -87,7 +94,7 @@ struct LunarPhase: Decodable {
 
 // MARK: - Human Design
 
-struct HumanDesignData: Decodable {
+struct HumanDesignData: Codable {
     let type: HDType
     let authority: HDAuthority
     let profile: HDProfile
@@ -97,7 +104,7 @@ struct HumanDesignData: Decodable {
     let channels: [String]
 }
 
-struct HDType: Decodable {
+struct HDType: Codable {
     let energyType: String
     let strategy: String
     let signature: String
@@ -105,38 +112,38 @@ struct HDType: Decodable {
     let aura: String
 }
 
-struct HDAuthority: Decodable {
+struct HDAuthority: Codable {
     let innerAuthority: String
 }
 
-struct HDProfile: Decodable {
+struct HDProfile: Codable {
     let profile: String
     let incarnationCross: String
 }
 
-struct HDDefinition: Decodable {
+struct HDDefinition: Codable {
     let definitionType: String
     let definedCenters: [String]
     let undefinedCenters: [String]
 }
 
-struct HDVariables: Decodable {
+struct HDVariables: Codable {
     let topLeft: HDVariableArrow?
     let bottomLeft: HDVariableArrow?
     let topRight: HDVariableArrow?
     let bottomRight: HDVariableArrow?
 
-    struct HDVariableArrow: Decodable {
+    struct HDVariableArrow: Codable {
         let value: String
     }
 }
 
-struct HDPlanets: Decodable {
+struct HDPlanets: Codable {
     let personality: [String: HDPlanetData]
     let design: [String: HDPlanetData]
 }
 
-struct HDPlanetData: Decodable {
+struct HDPlanetData: Codable {
     let longitude: Double?
     let gate: Int
     let line: Int

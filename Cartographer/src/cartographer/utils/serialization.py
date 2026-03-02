@@ -144,7 +144,11 @@ def gatesJSON(data):
         planet   = data['planets'][i]
         ch_gate  = data['ch_gate'][i]
 
-        harmonic_planet = gate_to_planet.get(lbl, {}).get(ch_gate) if ch_gate else None
+        other_lbl = 'des' if lbl == 'prs' else 'prs'
+        harmonic_planet = (
+            gate_to_planet.get(lbl, {}).get(ch_gate)
+            or gate_to_planet.get(other_lbl, {}).get(ch_gate)
+        ) if ch_gate else None
 
         dignity_result = calculate_dignity(
             gate=gate,

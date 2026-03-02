@@ -1,7 +1,5 @@
 """
-Astrology Calculation Service — Skyfield-based natal chart calculator.
-
-Replaces the former Kerykeion/pyswisseph wrapper.
+Astrology Calculation Service — pyswisseph-based natal chart calculator.
 """
 
 import math
@@ -10,11 +8,9 @@ import pytz
 
 from .ephemeris import (
     birth_to_time,
-    time_to_jd,
-    jd_to_time,
     get_ecliptic_longitude,
     get_planet_speed,
-    calculate_placidus_cusps,
+    calculate_houses,
 )
 
 # ─── Zodiac & element/modality lookup tables ──────────────────────────────────
@@ -40,7 +36,7 @@ MODALITY_MAP = {
 PLANET_NAMES = [
     "Sun", "Moon", "Mercury", "Venus", "Mars",
     "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto",
-    "North_Node",
+    "North_Node", "South_Node", "Chiron", "Lilith",
 ]
 
 # Aspect definitions: (name, exact angle, max orb)
@@ -108,12 +104,14 @@ def calculate_natal_chart(
     lat: float,
     lng: float,
     tz_str: str,
-    house_system: str = "P",
+    house_system: str = "W",
 ):
     """
-    Calculate complete natal chart using Skyfield + custom Placidus houses.
+    Calculate complete natal chart using pyswisseph.
 
     Returns a dict with planets, houses, aspects, lunar_phase, elements, modalities.
+    houses dict includes house_1..house_12 cusp longitudes plus "asc" and "mc"
+    for the true Ascendant and Midheaven (important for Whole Sign orientation).
     """
     # Resolve UTC offset from tz string
     tz = pytz.timezone(tz_str)
@@ -122,8 +120,9 @@ def calculate_natal_chart(
 
     t = birth_to_time(year, month, day, hour, minute, 0, tz_offset_hours)
 
-    # Placidus house cusps
-    cusps = calculate_placidus_cusps(t, lat, lng)
+    # House cusps + true ASC/MC
+    house_data = calculate_houses(t, lat, lng, house_system)
+    cusps = house_data["cusps"]
 
     # Planet positions
     planets_data = []
@@ -147,8 +146,10 @@ def calculate_natal_chart(
             "house": house,
         })
 
-    # House cusp dict
+    # House cusp dict — include true ASC/MC alongside the cusp keys
     houses_data = {f"house_{i + 1}": round(cusps[i], 6) for i in range(12)}
+    houses_data["asc"] = round(house_data["asc"], 6)
+    houses_data["mc"]  = round(house_data["mc"],  6)
 
     # Aspects
     aspects_data = []

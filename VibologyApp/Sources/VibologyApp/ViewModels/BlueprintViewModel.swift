@@ -6,7 +6,7 @@ import Observation
 enum BlueprintState {
     case input
     case loading
-    case loaded(HumanDesignData)
+    case loaded(BlueprintResponse)
     case error(String)
 }
 
@@ -18,10 +18,8 @@ final class BlueprintViewModel {
     var name: String = ""
     var dateText: String = ""       // MM/DD/YYYY, digits auto-masked
     var timeText: String = ""       // HH:MM, digits auto-masked
-    var country: String = ""
-    var city: String = ""
+    var place: String = ""
 
-    var countrySuggestions: [String] = []
     var state: BlueprintState = .input
 
     // MARK: - Validation
@@ -46,43 +44,23 @@ final class BlueprintViewModel {
         !name.trimmingCharacters(in: .whitespaces).isEmpty &&
         parsedDate != nil &&
         parsedTime != nil &&
-        !country.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !city.trimmingCharacters(in: .whitespaces).isEmpty
-    }
-
-    // MARK: - Country autocomplete (locale, no network)
-
-    private static let allCountries: [String] = Locale.Region.isoRegions
-        .compactMap { Locale.current.localizedString(forRegionCode: $0.identifier) }
-        .sorted()
-
-    func updateCountrySuggestions() {
-        let q = country.trimmingCharacters(in: .whitespaces)
-        guard !q.isEmpty else { countrySuggestions = []; return }
-        countrySuggestions = Array(
-            Self.allCountries.filter { $0.localizedCaseInsensitiveContains(q) }.prefix(6)
-        )
+        !place.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     // MARK: - Actions
 
     func generate() async {
         guard let d = parsedDate, let t = parsedTime else { return }
-        let place = [city, country]
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
-            .joined(separator: ", ")
-
         let req = BlueprintRequest(
             name: name.trimmingCharacters(in: .whitespaces),
             year: d.year, month: d.month, day: d.day,
             hour: t.hour, minute: t.minute,
-            place: place
+            place: place.trimmingCharacters(in: .whitespaces)
         )
         state = .loading
         do {
             let response = try await CartographerService.shared.blueprint(req)
-            state = .loaded(response.humanDesign)
+            state = .loaded(response)
         } catch is CancellationError {
             state = .input
         } catch {
@@ -94,9 +72,7 @@ final class BlueprintViewModel {
         name = ""
         dateText = ""
         timeText = ""
-        country = ""
-        city = ""
-        countrySuggestions = []
+        place = ""
         state = .input
     }
 }

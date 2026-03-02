@@ -35,6 +35,9 @@ actor CartographerService {
     private let encoder = JSONEncoder()
 
     func blueprint(_ request: BlueprintRequest) async throws -> BlueprintResponse {
+        let hash = BlueprintCache.shared.requestHash(request)
+        if let cached = await BlueprintCache.shared.get(hash) { return cached }
+
         let url = baseURL.appendingPathComponent("blueprint")
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
@@ -55,6 +58,8 @@ actor CartographerService {
             )
         }
 
-        return try decoder.decode(BlueprintResponse.self, from: data)
+        let result = try decoder.decode(BlueprintResponse.self, from: data)
+        await BlueprintCache.shared.set(hash, result)
+        return result
     }
 }

@@ -726,7 +726,7 @@ def process_hybrid_analysis(participants, group_type="family", verbosity="all"):
     # 4. Meta & Final Response (10x Enhancement)
     from datetime import datetime
     
-    ephemeris_ver = "Skyfield/de440s"
+    ephemeris_ver = "pyswisseph"
     
     meta = {
         "engine": "Maia-Penta v2.0",

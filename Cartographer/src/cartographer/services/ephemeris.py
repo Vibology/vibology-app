@@ -1,344 +1,200 @@
 """
-Skyfield ephemeris wrapper — central module for all astronomical calculations.
+pyswisseph ephemeris wrapper — central module for all astronomical calculations.
 
-All other modules should import from here rather than using pyswisseph directly.
-Ephemeris file: de440s.bsp (JPL DE440 small, covers 1849–2150, ~32 MB, public domain).
+All other modules should import from here rather than using swisseph directly.
+Ephemeris files: sepl/semo_18-21.se1 (planets + Moon, 1800–2200) + seas_18-21.se1 (Chiron).
 """
 
 import os
-import math
 import logging
-from functools import lru_cache
+from datetime import datetime, timedelta
 
-from skyfield.api import Loader, Timescale
-from skyfield.framelib import ecliptic_frame
+import swisseph as swe
 
 logger = logging.getLogger(__name__)
 
-# ─── Ephemeris loading ────────────────────────────────────────────────────────
+# ─── Ephemeris path setup ─────────────────────────────────────────────────────
 
-_EPHEMERIS_PATH = os.environ.get("SKYFIELD_EPHEMERIS_PATH", "/data/ephemeris")
-_eph = None
-_ts: Timescale = None
+_EPHE_PATH = os.environ.get("SE_EPHE_PATH", "/data/ephe")
+swe.set_ephe_path(_EPHE_PATH)
+logger.info("Swiss Ephemeris path set to %s", _EPHE_PATH)
+
+# ─── Planet ID map ────────────────────────────────────────────────────────────
+
+BODY_IDS: dict[str, int] = {
+    "Sun":        swe.SUN,
+    "Moon":       swe.MOON,
+    "Mercury":    swe.MERCURY,
+    "Venus":      swe.VENUS,
+    "Mars":       swe.MARS,
+    "Jupiter":    swe.JUPITER,
+    "Saturn":     swe.SATURN,
+    "Uranus":     swe.URANUS,
+    "Neptune":    swe.NEPTUNE,
+    "Pluto":      swe.PLUTO,
+    "North_Node": swe.MEAN_NODE,
+    "South_Node": swe.MEAN_NODE,   # longitude + 180°
+    "Chiron":     swe.CHIRON,      # asteroid 2060; requires seas_NN.se1
+    "Lilith":     swe.MEAN_APOG,   # Black Moon Lilith (mean lunar apogee)
+    # HD gate calculations also call "Earth" — treat as Sun + 180°
+    "Earth":      swe.SUN,
+}
+
+# Auto-select ephemeris: SE files if valid, Moshier built-in otherwise.
+# Do NOT use FLG_SWIEPH — that forces file-only and fails if a file is absent
+# or damaged. FLG_SPEED always included so we get longitude velocity in xx[3].
+_SWE_FLAGS = swe.FLG_SPEED
 
 
-def _ensure_loaded():
-    global _eph, _ts
-    if _eph is None:
-        load = Loader(_EPHEMERIS_PATH)
-        _eph = load("de440s.bsp")
-        _ts = load.timescale()
-        logger.info("Skyfield de440s.bsp ephemeris loaded from %s", _EPHEMERIS_PATH)
+# ─── Time conversion ──────────────────────────────────────────────────────────
+
+def local_to_jd(year: int, month: int, day: int,
+                hour: int, minute: int, second: int,
+                tz_offset_hours: float) -> float:
+    """Convert local birth datetime + UTC offset → Julian Day (UT)."""
+    local_dt = datetime(year, month, day, hour, minute, int(second))
+    utc_dt = local_dt - timedelta(hours=tz_offset_hours)
+    ut_hour = utc_dt.hour + utc_dt.minute / 60.0 + utc_dt.second / 3600.0
+    return swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, ut_hour)
 
 
-def load_ephemeris():
-    """Load and return the de440s ephemeris (cached at module level)."""
-    _ensure_loaded()
-    return _eph
-
-
-def get_timescale() -> Timescale:
-    """Return the shared Skyfield Timescale object."""
-    _ensure_loaded()
-    return _ts
-
-
-# ─── Time conversion helpers ─────────────────────────────────────────────────
+# ── Backwards-compatible aliases (time ≡ JD float in this implementation) ────
 
 def birth_to_time(year: int, month: int, day: int,
                   hour: int, minute: int, second: int,
-                  tz_offset_hours: float):
+                  tz_offset_hours: float) -> float:
+    """Alias for local_to_jd(). Returns a JD float."""
+    return local_to_jd(year, month, day, hour, minute, int(second), tz_offset_hours)
+
+
+def jd_to_time(jd: float) -> float:
+    """Identity — JD float IS the time type in this implementation."""
+    return jd
+
+
+def time_to_jd(t: float) -> float:
+    """Identity — JD float IS the time type in this implementation."""
+    return t
+
+
+def time_to_utc_tuple(t: float) -> tuple:
+    """Convert JD (UT) → (year, month, day, hour, minute, second) in UTC."""
+    year, month, day, hour, minute, second = swe.jdut1_to_utc(t, swe.GREG_CAL)
+    return (int(year), int(month), int(day), int(hour), int(minute), float(second))
+
+
+class _TimescaleShim:
     """
-    Convert a local birth datetime + UTC offset to a Skyfield Time object.
-
-    tz_offset_hours: e.g. -5.0 for EST, +1.0 for CET.
+    Minimal Timescale-like object so features/core.py can call
+    get_timescale().utc(year, month, day) without modification.
     """
-    _ensure_loaded()
-    # Convert to UTC
-    total_seconds_offset = tz_offset_hours * 3600
-    from datetime import datetime, timezone, timedelta
-    local_dt = datetime(year, month, day, hour, minute, int(second))
-    utc_dt = local_dt - timedelta(seconds=total_seconds_offset)
-    return _ts.utc(utc_dt.year, utc_dt.month, utc_dt.day,
-                   utc_dt.hour, utc_dt.minute, utc_dt.second)
+
+    def utc(self, year, month=1, day=1, hour=0, minute=0, second=0) -> float:
+        """Return JD (UT) for the given UTC date/time."""
+        ut_hour = float(hour) + float(minute) / 60.0 + float(second) / 3600.0
+        return swe.julday(year, month, day, ut_hour)
+
+    def tt_jd(self, jd: float) -> float:
+        """Identity — no TT/UT distinction needed at this precision."""
+        return jd
 
 
-def jd_to_time(jd: float):
-    """Convert a Julian Day number (UT1) to a Skyfield Time object."""
-    _ensure_loaded()
-    return _ts.tt_jd(jd)
+def get_timescale() -> _TimescaleShim:
+    """Return a timescale-like shim for backwards compatibility with features/core.py."""
+    return _TimescaleShim()
 
 
-def time_to_jd(t) -> float:
-    """Return the Terrestrial Time Julian Day for a Skyfield Time object."""
-    return t.tt
+# ─── Ecliptic positions ───────────────────────────────────────────────────────
 
-
-def time_to_utc_tuple(t) -> tuple:
+def get_ecliptic_longitude(jd_ut: float, body_key: str) -> float:
     """
-    Return (year, month, day, hour, minute, second) in UTC.
-    Replaces swe.jdut1_to_utc().
+    Return ecliptic longitude (0–360°) for the named body at JD (UT).
+
+    Handles Earth (Sun + 180°) and South_Node (North_Node + 180°).
+    Returns float('nan') for unknown bodies.
     """
-    y, mo, d, h, mi, s = t.utc
-    return (int(y), int(mo), int(d), int(h), int(mi), float(s))
+    if body_key == "Earth":
+        return (get_ecliptic_longitude(jd_ut, "Sun") + 180.0) % 360.0
+
+    body_id = BODY_IDS.get(body_key)
+    if body_id is None:
+        return float("nan")
+
+    try:
+        xx, _ = swe.calc_ut(jd_ut, body_id, _SWE_FLAGS)
+    except swe.Error as e:
+        logger.warning("swe.calc_ut failed for %s: %s", body_key, e)
+        return float("nan")
+
+    lon = float(xx[0]) % 360.0
+
+    if body_key == "South_Node":
+        lon = (lon + 180.0) % 360.0
+
+    return lon
 
 
-# ─── Planet body lookup ───────────────────────────────────────────────────────
-
-def _earth_body():
-    _ensure_loaded()
-    return _eph["earth"]
-
-
-def _get_body(planet_key: str):
+def get_planet_speed(jd_ut: float, body_key: str) -> float:
     """
-    Return the Skyfield body for a given planet name string.
-
-    Returns None for Earth, North_Node, South_Node — those are handled separately.
+    Return longitude speed (degrees/day) for the named body.
+    Negative means retrograde.
     """
-    _ensure_loaded()
-    mapping = {
-        "Sun": "sun",
-        "Moon": "moon",
-        "Mercury": "mercury",
-        "Venus": "venus",
-        "Mars": "mars barycenter",
-        "Jupiter": "jupiter barycenter",
-        "Saturn": "saturn barycenter",
-        "Uranus": "uranus barycenter",
-        "Neptune": "neptune barycenter",
-        "Pluto": "pluto barycenter",
-        # Chiron is not in DE440s — return None so caller can skip
-        "Chiron": None,
+    if body_key in ("Earth", "South_Node"):
+        return 0.0
+
+    body_id = BODY_IDS.get(body_key)
+    if body_id is None:
+        return 0.0
+
+    try:
+        xx, _ = swe.calc_ut(jd_ut, body_id, _SWE_FLAGS)
+    except swe.Error as e:
+        logger.warning("swe.calc_ut speed failed for %s: %s", body_key, e)
+        return 0.0
+
+    return float(xx[3])
+
+
+# ─── Houses ───────────────────────────────────────────────────────────────────
+
+def calculate_houses(jd_ut: float, lat: float, lon: float, hsys: str = "W") -> dict:
+    """
+    Return a dict with house cusps plus the actual ASC and MC.
+
+    Keys:
+      "cusps": list of 12 floats — house cusp longitudes (0–360°), houses 1–12
+      "asc":   float — true Ascendant ecliptic longitude (always the rising degree)
+      "mc":    float — true MC ecliptic longitude
+
+    For Whole Sign ('W') the cusp longitudes are the sign boundaries (multiples
+    of 30° starting from the sign that contains the ASC).  The actual ASC degree
+    differs from house_1 and is needed to orient the wheel correctly.
+
+    hsys: 'W'=WholeSign, 'P'=Placidus, 'K'=Koch, 'E'=Equal, etc.
+    """
+    cusps, ascmc = swe.houses(jd_ut, lat, lon, hsys.encode())
+    # pyswisseph's Python binding returns cusps as a 12-tuple (houses 1–12 at
+    # indices 0–11), unlike the C API which has a dummy element at index 0.
+    return {
+        "cusps": [float(c) % 360.0 for c in cusps],
+        "asc":   float(ascmc[0]) % 360.0,
+        "mc":    float(ascmc[1]) % 360.0,
     }
-    return mapping.get(planet_key)
 
 
-# ─── Ecliptic longitude ───────────────────────────────────────────────────────
+def calculate_placidus_cusps(jd_ut: float, lat: float, lon: float) -> list:
+    """Backwards-compatible alias — returns just the cusp list."""
+    return calculate_houses(jd_ut, lat, lon, "P")["cusps"]
 
-def mean_north_node(t) -> float:
+
+# ─── Solar crossing ───────────────────────────────────────────────────────────
+
+def find_sun_crossing(target_lon: float, t_start: float, t_end: float = None) -> float:
     """
-    IAU formula for mean lunar north node longitude (degrees 0–360).
-    Replaces pyswisseph's node calculation.
+    Return the JD (UT) when the Sun next crosses target_lon, searching
+    forward from t_start.
+
+    Uses swe.solcross_ut() — fast, exact, no iteration needed.
+    t_end is accepted for API compatibility but ignored (swe searches forward).
     """
-    T = (t.tt - 2451545.0) / 36525.0
-    omega = (125.04452
-             - 1934.136261 * T
-             + 0.0020708 * T ** 2
-             + T ** 3 / 450000.0)
-    return omega % 360
-
-
-def get_ecliptic_longitude(t, planet_key: str) -> float:
-    """
-    Return ecliptic longitude (0–360°) for the named planet at time t.
-
-    Handles Earth (Sun + 180°), North_Node, South_Node, Chiron (returns NaN).
-    Replaces swe.calc_ut().
-    """
-    _ensure_loaded()
-
-    if planet_key == "Earth":
-        sun_lon = get_ecliptic_longitude(t, "Sun")
-        return (sun_lon + 180.0) % 360.0
-
-    if planet_key == "North_Node":
-        return mean_north_node(t)
-
-    if planet_key == "South_Node":
-        return (mean_north_node(t) + 180.0) % 360.0
-
-    if planet_key == "Chiron":
-        return float("nan")
-
-    body_key = _get_body(planet_key)
-    if body_key is None:
-        return float("nan")
-
-    earth = _earth_body()
-    body = _eph[body_key]
-    astrometric = earth.at(t).observe(body)
-    _, lon, _ = astrometric.apparent().frame_latlon(ecliptic_frame)
-    return float(lon.degrees) % 360.0
-
-
-def get_planet_speed(t, planet_key: str) -> float:
-    """
-    Return the ecliptic longitude speed (degrees/day) for the named planet.
-
-    Negative value means retrograde motion.
-    Skips Earth, nodes, Chiron (returns 0.0).
-    """
-    _ensure_loaded()
-    if planet_key in ("Earth", "North_Node", "South_Node", "Chiron"):
-        return 0.0
-
-    body_key = _get_body(planet_key)
-    if body_key is None:
-        return 0.0
-
-    # Finite difference: step half a day forward and backward
-    dt = 0.5  # days
-    t0 = _ts.tt_jd(t.tt - dt)
-    t1 = _ts.tt_jd(t.tt + dt)
-
-    lon0 = get_ecliptic_longitude(t0, planet_key)
-    lon1 = get_ecliptic_longitude(t1, planet_key)
-
-    # Handle 0°/360° wrap
-    diff = (lon1 - lon0 + 180.0) % 360.0 - 180.0
-    return float(diff / (2.0 * dt))
-
-
-def get_obliquity(t) -> float:
-    """
-    Return the mean obliquity of the ecliptic in degrees at time t.
-    IAU 2006 formula (good to ~0.001° over centuries).
-    """
-    T = (t.tt - 2451545.0) / 36525.0
-    eps = (84381.406
-           - 46.836769 * T
-           - 0.0001831 * T ** 2
-           + 0.00200340 * T ** 3) / 3600.0
-    return eps
-
-
-# ─── Solar crossing (binary search) ─────────────────────────────────────────
-
-def find_sun_crossing(target_lon: float, t_start, t_end):
-    """
-    Find the moment when the Sun's ecliptic longitude crosses target_lon.
-
-    Uses binary search (50 iterations ≈ nanosecond precision).
-    Replaces swe.solcross_ut().
-
-    Args:
-        target_lon: target ecliptic longitude in degrees (0–360)
-        t_start: Skyfield Time — search start
-        t_end: Skyfield Time — search end
-
-    Returns:
-        Skyfield Time of crossing
-    """
-    _ensure_loaded()
-    jd0 = t_start.tt
-    jd1 = t_end.tt
-
-    for _ in range(50):
-        jd_mid = (jd0 + jd1) / 2.0
-        t_mid = _ts.tt_jd(jd_mid)
-        sun_lon = get_ecliptic_longitude(t_mid, "Sun")
-        dist = (sun_lon - target_lon + 180.0) % 360.0 - 180.0
-        if dist > 0:
-            jd1 = jd_mid
-        else:
-            jd0 = jd_mid
-
-    return _ts.tt_jd((jd0 + jd1) / 2.0)
-
-
-# ─── House cusps (Placidus) ───────────────────────────────────────────────────
-
-def calculate_placidus_cusps(t, lat: float, lon: float) -> list:
-    """
-    Calculate Placidus house cusps for a given time and geographic location.
-
-    Args:
-        t: Skyfield Time
-        lat: geographic latitude in degrees (north positive)
-        lon: geographic longitude in degrees (east positive)
-
-    Returns:
-        List of 12 house cusp longitudes (degrees 0–360), houses 1–12.
-    """
-    obliquity = get_obliquity(t)
-    eps = math.radians(obliquity)
-
-    # GAST in degrees → RAMC
-    gast_deg = t.gast * 15.0  # gast is in hours
-    ramc = math.radians((gast_deg + lon) % 360.0)
-
-    lat_r = math.radians(lat)
-
-    # MC (Medium Coeli)
-    mc_rad = math.atan2(math.tan(ramc), math.cos(eps))
-    if mc_rad < 0:
-        mc_rad += math.pi
-    if math.cos(ramc) < 0:
-        mc_rad += math.pi
-    mc = math.degrees(mc_rad) % 360.0
-
-    # ASC (Ascendant)
-    asc_rad = math.atan2(
-        math.cos(ramc),
-        -(math.sin(eps) * math.tan(lat_r) + math.cos(eps) * math.sin(ramc))
-    )
-    asc = math.degrees(asc_rad) % 360.0
-    # Ensure ASC is in the upper hemisphere (below the horizon)
-    if asc < mc:
-        asc += 180.0
-    asc = asc % 360.0
-
-    # Placidus intermediate houses via semi-arc trisection
-    def placidus_cusp(house_fraction: float, diurnal: bool) -> float:
-        """
-        house_fraction: 1/3 or 2/3 of the appropriate semi-arc
-        diurnal: True for houses 10–11 side (upper), False for lower
-        """
-        # Iterative solution — converges in ~10 iterations
-        cusp = mc + house_fraction * 90.0  # initial estimate
-        for _ in range(20):
-            cusp_r = math.radians(cusp)
-            # Declination of point on ecliptic at cusp longitude
-            sin_dec = math.sin(eps) * math.sin(cusp_r)
-            dec = math.asin(max(-1.0, min(1.0, sin_dec)))
-            # Semi-arc
-            cos_sa = -math.tan(lat_r) * math.tan(dec)
-            cos_sa = max(-1.0, min(1.0, cos_sa))
-            sa = math.acos(cos_sa)  # radians; diurnal semi-arc
-            if not diurnal:
-                sa = math.pi - sa
-            # RAMC of cusp
-            ramc_cusp = math.radians(ramc) * (180.0 / math.pi) + math.degrees(sa) * house_fraction
-            # Cusp longitude from RAMC
-            new_cusp_r = math.atan2(
-                math.cos(math.radians(ramc_cusp)),
-                -(math.sin(eps) * math.tan(lat_r) + math.cos(eps) * math.sin(math.radians(ramc_cusp)))
-            )
-            new_cusp = math.degrees(new_cusp_r) % 360.0
-            if abs(new_cusp - cusp) < 0.0001:
-                break
-            cusp = new_cusp
-        return cusp % 360.0
-
-    # Standard Placidus: houses 11, 12 are 1/3 and 2/3 of diurnal semi-arc from MC
-    # Houses 2, 3 are 1/3 and 2/3 of nocturnal semi-arc from IC
-    # We use the Ascendant and MC as anchors for houses 1 and 10 respectively.
-    ic = (mc + 180.0) % 360.0
-    dsc = (asc + 180.0) % 360.0
-
-    # Houses 11, 12 (upper): trisect arc from MC→ASC (going forward)
-    h11 = placidus_cusp(1.0 / 3.0, diurnal=True)
-    h12 = placidus_cusp(2.0 / 3.0, diurnal=True)
-
-    # Houses 2, 3 (lower): trisect arc from IC→DSC
-    h2 = placidus_cusp(1.0 / 3.0, diurnal=False)
-    h3 = placidus_cusp(2.0 / 3.0, diurnal=False)
-
-    # Build all 12 cusps
-    cusps = [
-        asc,          # 1
-        h2,           # 2
-        h3,           # 3
-        ic,           # 4
-        (h11 + 180.0) % 360.0,  # 5 = opposite of 11
-        (h12 + 180.0) % 360.0,  # 6 = opposite of 12
-        dsc,          # 7 = opposite of ASC
-        (h2 + 180.0) % 360.0,   # 8 = opposite of 2
-        (h3 + 180.0) % 360.0,   # 9 = opposite of 3
-        mc,           # 10
-        h11,          # 11
-        h12,          # 12
-    ]
-
-    return cusps
+    return swe.solcross_ut(target_lon, t_start, _SWE_FLAGS)

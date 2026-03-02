@@ -5,8 +5,8 @@ pydantic>=2.7.0
 python-dotenv
 httpx
 
-# Astrology & Ephemeris (Skyfield — MIT licensed, JPL public-domain data)
-skyfield>=1.46
+# Astrology & Ephemeris (pyswisseph — industry standard, Chiron included)
+pyswisseph>=2.10.0
 pytz>=2024.0
 
 # Human Design Calculations

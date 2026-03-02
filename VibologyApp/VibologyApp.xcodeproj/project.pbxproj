@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -19,6 +19,20 @@
 		AA00000100000000000000CA /* BlueprintViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000CA /* BlueprintViewModel.swift */; };
 		AA00000100000000000000DA /* BirthDataInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000DA /* BirthDataInputView.swift */; };
 		AA00000100000000000000EA /* PlanetTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000EA /* PlanetTableView.swift */; };
+		D8354CDD2F55CD0500880347 /* AstrologyWheelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8354CDC2F55CD0500880347 /* AstrologyWheelView.swift */; };
+		D8354CDF2F55CD2400880347 /* BlueprintCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8354CDE2F55CD2400880347 /* BlueprintCache.swift */; };
+		D8354CED2F560EC800880347 /* Aries.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE12F560EC800880347 /* Aries.svg */; };
+		D8354CEE2F560EC800880347 /* Cancer.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE22F560EC800880347 /* Cancer.svg */; };
+		D8354CEF2F560EC800880347 /* Sagittarius.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE82F560EC800880347 /* Sagittarius.svg */; };
+		D8354CF02F560EC800880347 /* Scorpio.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE92F560EC800880347 /* Scorpio.svg */; };
+		D8354CF12F560EC800880347 /* Pisces.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE72F560EC800880347 /* Pisces.svg */; };
+		D8354CF22F560EC800880347 /* Gemini.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE42F560EC800880347 /* Gemini.svg */; };
+		D8354CF32F560EC800880347 /* Aquarius.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE02F560EC800880347 /* Aquarius.svg */; };
+		D8354CF42F560EC800880347 /* Taurus.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CEA2F560EC800880347 /* Taurus.svg */; };
+		D8354CF52F560EC800880347 /* Capricorn.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE32F560EC800880347 /* Capricorn.svg */; };
+		D8354CF62F560EC800880347 /* Virgo.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CEB2F560EC800880347 /* Virgo.svg */; };
+		D8354CF72F560EC800880347 /* Libra.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE62F560EC800880347 /* Libra.svg */; };
+		D8354CF82F560EC800880347 /* Leo.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE52F560EC800880347 /* Leo.svg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +50,20 @@
 		AA00000200000000000000CA /* BlueprintViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintViewModel.swift; sourceTree = "<group>"; };
 		AA00000200000000000000DA /* BirthDataInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthDataInputView.swift; sourceTree = "<group>"; };
 		AA00000200000000000000EA /* PlanetTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanetTableView.swift; sourceTree = "<group>"; };
+		D8354CDC2F55CD0500880347 /* AstrologyWheelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AstrologyWheelView.swift; sourceTree = "<group>"; };
+		D8354CDE2F55CD2400880347 /* BlueprintCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintCache.swift; sourceTree = "<group>"; };
+		D8354CE02F560EC800880347 /* Aquarius.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Aquarius.svg; sourceTree = "<group>"; };
+		D8354CE12F560EC800880347 /* Aries.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Aries.svg; sourceTree = "<group>"; };
+		D8354CE22F560EC800880347 /* Cancer.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Cancer.svg; sourceTree = "<group>"; };
+		D8354CE32F560EC800880347 /* Capricorn.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Capricorn.svg; sourceTree = "<group>"; };
+		D8354CE42F560EC800880347 /* Gemini.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Gemini.svg; sourceTree = "<group>"; };
+		D8354CE52F560EC800880347 /* Leo.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Leo.svg; sourceTree = "<group>"; };
+		D8354CE62F560EC800880347 /* Libra.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Libra.svg; sourceTree = "<group>"; };
+		D8354CE72F560EC800880347 /* Pisces.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Pisces.svg; sourceTree = "<group>"; };
+		D8354CE82F560EC800880347 /* Sagittarius.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Sagittarius.svg; sourceTree = "<group>"; };
+		D8354CE92F560EC800880347 /* Scorpio.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Scorpio.svg; sourceTree = "<group>"; };
+		D8354CEA2F560EC800880347 /* Taurus.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Taurus.svg; sourceTree = "<group>"; };
+		D8354CEB2F560EC800880347 /* Virgo.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Virgo.svg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,10 +77,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AA000004000000000000001A /* root */ = {
+		AA000004000000000000001A = {
 			isa = PBXGroup;
 			children = (
 				AA000004000000000000003A /* Sources */,
+				D8354CDC2F55CD0500880347 /* AstrologyWheelView.swift */,
+				D8354CDE2F55CD2400880347 /* BlueprintCache.swift */,
 				AA000004000000000000002A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -77,7 +107,7 @@
 				AA000002000000000000006A /* Info.plist */,
 			);
 			name = Sources;
-			path = "Sources/VibologyApp";
+			path = Sources/VibologyApp;
 			sourceTree = "<group>";
 		};
 		AA000004000000000000004A /* App */ = {
@@ -120,6 +150,7 @@
 		AA000004000000000000008A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D8354CEC2F560EC800880347 /* Zodiac */,
 				AA000002000000000000009A /* layout_data.json */,
 			);
 			path = Resources;
@@ -140,6 +171,25 @@
 				AA00000200000000000000CA /* BlueprintViewModel.swift */,
 			);
 			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		D8354CEC2F560EC800880347 /* Zodiac */ = {
+			isa = PBXGroup;
+			children = (
+				D8354CE02F560EC800880347 /* Aquarius.svg */,
+				D8354CE12F560EC800880347 /* Aries.svg */,
+				D8354CE22F560EC800880347 /* Cancer.svg */,
+				D8354CE32F560EC800880347 /* Capricorn.svg */,
+				D8354CE42F560EC800880347 /* Gemini.svg */,
+				D8354CE52F560EC800880347 /* Leo.svg */,
+				D8354CE62F560EC800880347 /* Libra.svg */,
+				D8354CE72F560EC800880347 /* Pisces.svg */,
+				D8354CE82F560EC800880347 /* Sagittarius.svg */,
+				D8354CE92F560EC800880347 /* Scorpio.svg */,
+				D8354CEA2F560EC800880347 /* Taurus.svg */,
+				D8354CEB2F560EC800880347 /* Virgo.svg */,
+			);
+			path = Zodiac;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -201,6 +251,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000001000000000000007A /* layout_data.json in Resources */,
+				D8354CED2F560EC800880347 /* Aries.svg in Resources */,
+				D8354CEE2F560EC800880347 /* Cancer.svg in Resources */,
+				D8354CEF2F560EC800880347 /* Sagittarius.svg in Resources */,
+				D8354CF02F560EC800880347 /* Scorpio.svg in Resources */,
+				D8354CF12F560EC800880347 /* Pisces.svg in Resources */,
+				D8354CF22F560EC800880347 /* Gemini.svg in Resources */,
+				D8354CF32F560EC800880347 /* Aquarius.svg in Resources */,
+				D8354CF42F560EC800880347 /* Taurus.svg in Resources */,
+				D8354CF52F560EC800880347 /* Capricorn.svg in Resources */,
+				D8354CF62F560EC800880347 /* Virgo.svg in Resources */,
+				D8354CF72F560EC800880347 /* Libra.svg in Resources */,
+				D8354CF82F560EC800880347 /* Leo.svg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -218,9 +280,11 @@
 				AA000001000000000000005A /* BodygraphView.swift in Sources */,
 				AA000001000000000000006A /* SVGPathParser.swift in Sources */,
 				AA00000100000000000000AA /* LocationSearchService.swift in Sources */,
+				D8354CDD2F55CD0500880347 /* AstrologyWheelView.swift in Sources */,
 				AA00000100000000000000BA /* CartographerService.swift in Sources */,
 				AA00000100000000000000CA /* BlueprintViewModel.swift in Sources */,
 				AA00000100000000000000DA /* BirthDataInputView.swift in Sources */,
+				D8354CDF2F55CD2400880347 /* BlueprintCache.swift in Sources */,
 				AA00000100000000000000EA /* PlanetTableView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -275,7 +339,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Sources/VibologyApp/Info.plist";
+				INFOPLIST_FILE = Sources/VibologyApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -296,7 +360,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = "Sources/VibologyApp/Info.plist";
+				INFOPLIST_FILE = Sources/VibologyApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -332,7 +396,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = AA000006000000000000001A /* Project object */;
 }
