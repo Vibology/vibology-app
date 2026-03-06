@@ -32,8 +32,8 @@ BODY_IDS: dict[str, int] = {
     "Uranus":     swe.URANUS,
     "Neptune":    swe.NEPTUNE,
     "Pluto":      swe.PLUTO,
-    "North_Node": swe.MEAN_NODE,
-    "South_Node": swe.MEAN_NODE,   # longitude + 180°
+    "North_Node": swe.TRUE_NODE,
+    "South_Node": swe.TRUE_NODE,   # longitude + 180°
     "Chiron":     swe.CHIRON,      # asteroid 2060; requires seas_NN.se1
     "Lilith":     swe.MEAN_APOG,   # Black Moon Lilith (mean lunar apogee)
     # HD gate calculations also call "Earth" — treat as Sun + 180°

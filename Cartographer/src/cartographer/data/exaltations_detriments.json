@@ -692,7 +692,7 @@
     },
     "2": {
       "exaltation_planets": [
-        "Jupiter"
+        "Saturn"
       ],
       "detriment_planets": [
         "Mercury"
@@ -1518,11 +1518,12 @@
     },
     "4": {
       "exaltation_planets": [
-        "Venus"
+        "Venus",
+        "Jupiter"
       ],
       "detriment_planets": [],
       "juxtaposition_planets": [],
-      "no_polarity": true
+      "no_polarity": false
     },
     "5": {
       "exaltation_planets": [
@@ -2878,7 +2879,7 @@
     },
     "4": {
       "exaltation_planets": [
-        "Jupiter"
+        "Saturn"
       ],
       "detriment_planets": [
         "Moon"
@@ -2888,7 +2889,7 @@
     },
     "5": {
       "exaltation_planets": [
-        "Mercury"
+        "Venus"
       ],
       "detriment_planets": [],
       "juxtaposition_planets": [],
