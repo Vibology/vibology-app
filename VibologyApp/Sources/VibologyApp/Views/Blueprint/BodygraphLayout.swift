@@ -4,12 +4,12 @@ import CoreGraphics
 
 // MARK: - BodygraphData
 //
-// Loads and caches all geometry from bodygraph.svg (1500×2169 canvas space).
+// Loads and caches all geometry from bodygraph.svg (2060×2652 canvas space).
 // Provides static lookup tables used by BodygraphView for HD data mapping.
 
 struct BodygraphData {
 
-    // MARK: Geometry (1500×2169 coordinate space)
+    // MARK: Geometry (2060×2652 coordinate space)
 
     let bodyOutline:   Path
     let channelPaths:  [String: Path]    // SVG id (e.g. "9-52")        → Path
@@ -168,7 +168,7 @@ struct BodygraphData {
 
 // MARK: - SVGBodygraphParser
 //
-// Pure-Swift line scanner for bodygraph.svg (1500×2169 canvas).
+// Pure-Swift line scanner for bodygraph.svg (2060×2652 canvas).
 // Returns raw SVG path strings and CGPoints — no SwiftUI dependency.
 // Relies on Pixelmator Pro's predictable output: one element per line,
 // double-quoted attributes, </g> on its own line.
@@ -208,12 +208,12 @@ private struct SVGBodygraphParser {
                 let parent = groupStack.last ?? ""
                 guard !d.isEmpty else { i += 1; continue }
 
-                if id == "Body" {
+                if id == "New-Body" || id == "Body" {
                     bodyD = d
                 } else if parent == "Channels", !id.isEmpty {
                     channelDs[id] = d
                 } else if Self.centerGroupIDs.contains(parent) {
-                    if isPathN(id), !seenCenterShape.contains(parent) {
+                    if gateFromActiveID(id) == nil, !seenCenterShape.contains(parent) {
                         centerDs[parent] = d
                         seenCenterShape.insert(parent)
                     } else if let gate = gateFromActiveID(id),
@@ -278,10 +278,6 @@ private struct SVGBodygraphParser {
         "Sacral-Center", "HeartEgo-Center", "G-Center",
         "Throat-Center", "Ajna-Center", "Head-Center",
     ]
-
-    private func isPathN(_ id: String) -> Bool {
-        id.hasPrefix("path") && id.dropFirst(4).allSatisfy(\.isNumber)
-    }
 
     private func gateFromActiveID(_ id: String) -> Int? {
         guard id.hasPrefix("Gate-"), id.hasSuffix("-Active") else { return nil }

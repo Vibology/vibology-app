@@ -9,19 +9,10 @@ private extension Color {
     static let channelDesign   = Color(red: 1.000, green: 0.220, blue: 0.702) // #FF38B3 magenta (design)
     static let splitAccentB    = Color(red: 0.267, green: 0.533, blue: 1.000) // #4488ff
 
-    // Defined center fills — synthwave takes on Jovian Archive color families
-    // Gold   (ref #F9F6A9): Head, G-Center           — consciousness / identity
-    static let centerGoldTop    = Color(red: 1.000, green: 0.851, blue: 0.239) // #FFD93D
-    static let centerGoldBot    = Color(red: 0.957, green: 0.635, blue: 0.165) // #F4A22A
-    // Teal   (ref #668E82): Ajna                     — mental awareness
-    static let centerTealTop    = Color(red: 0.239, green: 0.800, blue: 0.667) // #3DCCAA
-    static let centerTealBot    = Color(red: 0.102, green: 0.604, blue: 0.478) // #1A9A7A
-    // Crimson (ref #493A36): Throat, Spleen, SP, Root — awareness / pressure / motor
-    static let centerCrimsonTop = Color(red: 0.600, green: 0.200, blue: 0.320) // #993352
-    static let centerCrimsonBot = Color(red: 0.380, green: 0.100, blue: 0.200) // #611933
-    // Rose   (ref #BA4C43): Heart/Ego, Sacral         — energy / motor
-    static let centerRoseTop    = Color(red: 0.910, green: 0.220, blue: 0.282) // #E83848
-    static let centerRoseBot    = Color(red: 0.722, green: 0.118, blue: 0.157) // #B81E28
+    // Defined center fills — brand gradient (all centers share the same identity)
+    static let brandCyan     = Color(red: 0.616, green: 0.847, blue: 0.969) // #9DD8F7
+    static let brandLavender = Color(red: 0.722, green: 0.647, blue: 0.898) // #B8A5E5
+    static let brandPearl    = Color(red: 0.910, green: 0.961, blue: 1.000) // #E8F5FF
     // Undefined center fill — medium bluish-grey
     static let centerUndefined  = Color(red: 0.28, green: 0.28, blue: 0.33) // ~#474754
 
@@ -227,21 +218,31 @@ struct BodygraphView: View {
             Canvas { ctx, sz in
                 let layout = BodygraphData.shared
 
-                // Scale 1500×2169 source to canvas, centred with margin
+                // Scale 2060×2652 source to canvas, centred with margin
                 let margin: CGFloat = 10
-                let scale = min((sz.width  - margin * 2) / 1500,
-                                (sz.height - margin * 2) / 2169)
-                let tx    = (sz.width  - 1500 * scale) / 2
-                let ty    = (sz.height - 2169 * scale) / 2
+                let scale = min((sz.width  - margin * 2) / 2060,
+                                (sz.height - margin * 2) / 2652)
+                let tx    = (sz.width  - 2060 * scale) / 2
+                let ty    = (sz.height - 2652 * scale) / 2
                 let xform = CGAffineTransform(translationX: tx, y: ty)
                                 .scaledBy(x: scale, y: scale)
 
                 let channelW: CGFloat = 13 * scale
 
-                // 1 ─ Body silhouette
+                // 1 ─ Body silhouette + bloom glow
                 let bodyPath = layout.bodyOutline.applying(xform)
-                ctx.fill(bodyPath,   with: .color(.white.opacity(0.04)))
-                ctx.stroke(bodyPath, with: .color(.white.opacity(0.10)), lineWidth: 4 * scale)
+                // Outer bloom — blurred wide stroke
+                ctx.drawLayer { g in
+                    g.addFilter(.blur(radius: 18))
+                    g.stroke(bodyPath, with: .color(.white.opacity(0.25)), lineWidth: 12 * scale)
+                }
+                // Mid bloom — tighter halo
+                ctx.drawLayer { g in
+                    g.addFilter(.blur(radius: 6))
+                    g.stroke(bodyPath, with: .color(.white.opacity(0.35)), lineWidth: 5 * scale)
+                }
+                // Core silhouette
+                ctx.fill(bodyPath, with: .color(.white.opacity(0.04)))
 
                 // 2 ─ Inactive channel strokes
                 //     Drawn into an isolated layer so channels that share a junction
@@ -404,34 +405,16 @@ struct BodygraphView: View {
 
                 // 6 ─ Centre shapes
                 //
-                // Defined centers: per-center gradient fills, no stroke.
-                // Color families (synthwave takes on Jovian Archive palette):
-                //   Gold    — Head, G-Center
-                //   Teal    — Ajna
-                //   Crimson — Throat, Spleen, Solar Plexus, Root
-                //   Rose    — Heart/Ego, Sacral
-                //
+                // Defined centers: per-center unique gradient fills, no stroke.
                 // Undefined centers: flat dark grey, no stroke.
                 for (svgID, rawPath) in layout.centers {
                     let path      = rawPath.applying(xform)
                     let isDefined = defined.contains(svgID)
 
                     if isDefined {
-                        let (c1, c2): (Color, Color) = {
-                            switch svgID {
-                            case "Head-Center", "G-Center":
-                                return (.centerGoldTop,    .centerGoldBot)
-                            case "Ajna-Center":
-                                return (.centerTealTop,    .centerTealBot)
-                            case "HeartEgo-Center", "Sacral-Center":
-                                return (.centerRoseTop,    .centerRoseBot)
-                            default: // Throat, Spleen, Solar-Plexus, Root
-                                return (.centerCrimsonTop, .centerCrimsonBot)
-                            }
-                        }()
                         let bounds = path.boundingRect
                         ctx.fill(path, with: .linearGradient(
-                            Gradient(colors: [c1, c2]),
+                            Gradient(colors: [.brandCyan, .brandLavender, .brandPearl]),
                             startPoint: CGPoint(x: bounds.midX, y: bounds.minY),
                             endPoint:   CGPoint(x: bounds.midX, y: bounds.maxY)
                         ))
@@ -456,7 +439,7 @@ struct BodygraphView: View {
             // 8 ─ Variable arrows (top region, above body shoulders)
             variablesOverlay
         }
-        .aspectRatio(1500.0 / 2169.0, contentMode: .fit)
+        .aspectRatio(2060.0 / 2652.0, contentMode: .fit)
         .background(Color.bgDeep)
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
@@ -483,12 +466,9 @@ struct BodygraphView: View {
 
             if isActive || isHanging {
                 // ── Activated gate: white circle + black number ──────────────────
-                let rect    = CGRect(x: centre.x - r, y: centre.y - r, width: r * 2, height: r * 2)
-                let strokeW = (isActive ? 4.0 : 3.0) * scale
+                let rect = CGRect(x: centre.x - r, y: centre.y - r, width: r * 2, height: r * 2)
 
                 ctx.fill(Path(ellipseIn: rect), with: .color(.white))
-
-                ctx.stroke(Path(ellipseIn: rect), with: .color(.black), lineWidth: strokeW)
 
                 let weight: Font.Weight = isActive ? .bold : .medium
                 let label = Text("\(gate)")
@@ -505,12 +485,7 @@ struct BodygraphView: View {
                 let centerDefined = defined.contains(centerSVGID)
                 let textColor: Color = {
                     guard centerDefined else { return Color.white.opacity(0.40) }
-                    switch centerAbbrev {
-                    case "HD", "GC": return Color(white: 0.15).opacity(0.80)  // gold — light bg
-                    case "AA":       return Color(white: 0.15).opacity(0.75)  // teal — medium-light bg
-                    case "HT", "SL": return Color.white.opacity(0.45)         // rose — medium-dark bg
-                    default:         return Color.white.opacity(0.40)         // crimson — dark bg
-                    }
+                    return Color(white: 0.10).opacity(0.85) // brand gradient is light — dark text throughout
                 }()
                 let label = Text("\(gate)")
                     .font(.system(size: fontSizeSmall, weight: .light))
