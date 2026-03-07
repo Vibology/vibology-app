@@ -4,12 +4,20 @@ import AppKit
 // MARK: - Wheel Color Palette
 
 private extension Color {
-    static let wheelBg   = Color(red: 0.027, green: 0.027, blue: 0.102) // #07071A
-    static let wheelRing = Color.white.opacity(0.22)
-    static let signFire  = Color(red: 1.00, green: 0.30, blue: 0.15).opacity(0.13)
-    static let signEarth = Color(red: 0.30, green: 0.90, blue: 0.45).opacity(0.10)
-    static let signAir   = Color(red: 0.60, green: 0.85, blue: 1.00).opacity(0.10)
-    static let signWater = Color(red: 0.30, green: 0.40, blue: 1.00).opacity(0.13)
+    // Deep space — identical to BodygraphView background
+    static let wheelBg       = Color(red: 0.027, green: 0.027, blue: 0.102) // #07071A
+    // Neon accents — same as BodygraphView channel colors
+    static let neonCyan      = Color(red: 0.298, green: 0.788, blue: 0.941) // #4CC9F0 personality
+    static let neonMagenta   = Color(red: 1.000, green: 0.220, blue: 0.702) // #FF38B3 design
+    // Brand gradient tones
+    static let brandCyan     = Color(red: 0.616, green: 0.847, blue: 0.969) // #9DD8F7
+    static let brandLavender = Color(red: 0.722, green: 0.647, blue: 0.898) // #B8A5E5
+    static let brandPearl    = Color(red: 0.910, green: 0.961, blue: 1.000) // #E8F5FF
+    // Sector fills — one hue per element, drawn from the brand palette
+    static let signFire  = Color(red: 1.000, green: 0.220, blue: 0.702).opacity(0.18) // neonMagenta — Fire
+    static let signEarth = Color(red: 0.961, green: 0.651, blue: 0.137).opacity(0.15) // warm amber  — Earth
+    static let signAir   = Color(red: 0.298, green: 0.788, blue: 0.941).opacity(0.18) // neonCyan    — Air
+    static let signWater = Color(red: 0.722, green: 0.647, blue: 0.898).opacity(0.20) // brandLavender — Water
 }
 
 private let elementFill: [String: Color] = [
@@ -79,19 +87,35 @@ private let planetGlyphs: [String: String] = [
 ]
 
 private let aspectColors: [String: Color] = [
-    "conjunction": .white,
-    "sextile":     Color(red: 0.30, green: 0.79, blue: 0.94),  // cyan
-    "square":      Color(red: 1.00, green: 0.22, blue: 0.70),  // magenta
-    "trine":       Color(red: 0.24, green: 0.80, blue: 0.67),  // teal
-    "opposition":  Color(red: 1.00, green: 0.42, blue: 0.21),  // orange
+    // Major — keyed to brand palette
+    "conjunction":    Color(red: 0.910, green: 0.961, blue: 1.000),  // brand pearl #E8F5FF
+    "sextile":        Color(red: 0.298, green: 0.788, blue: 0.941),  // personality cyan #4CC9F0
+    "square":         Color(red: 1.000, green: 0.220, blue: 0.702),  // design magenta #FF38B3
+    "trine":          Color(red: 0.722, green: 0.647, blue: 0.898),  // brand lavender #B8A5E5
+    "opposition":     Color(red: 1.000, green: 0.420, blue: 0.208),  // orange #FF6B35
+    // Minor — pulled from brand family, kept lighter
+    "quincunx":       Color(red: 1.000, green: 0.839, blue: 0.039),  // gold #FFD60A
+    "semisextile":    Color(red: 0.200, green: 0.750, blue: 0.550),  // teal-green
+    "semisquare":     Color(red: 0.969, green: 0.145, blue: 0.522),  // generator pink #F72585
+    "sesquiquadrate": Color(red: 0.969, green: 0.145, blue: 0.522),  // generator pink #F72585
+    "quintile":       Color(red: 0.616, green: 0.847, blue: 0.969),  // brand cyan #9DD8F7
+    "biquintile":     Color(red: 0.616, green: 0.847, blue: 0.969),  // brand cyan #9DD8F7
 ]
 
 private let aspectOpacity: [String: Double] = [
-    "conjunction": 0.50,
-    "sextile":     0.35,
-    "square":      0.35,
-    "trine":       0.35,
-    "opposition":  0.35,
+    // Major — neon glow against dark background
+    "conjunction":    0.70,
+    "sextile":        0.60,
+    "square":         0.60,
+    "trine":          0.55,
+    "opposition":     0.55,
+    // Minor — present but subordinate
+    "quincunx":       0.30,
+    "semisextile":    0.25,
+    "semisquare":     0.25,
+    "sesquiquadrate": 0.25,
+    "quintile":       0.25,
+    "biquintile":     0.25,
 ]
 
 private let houseAxisLabels: [Int: String] = [1: "ASC", 4: "IC", 7: "DSC", 10: "MC"]
@@ -167,13 +191,19 @@ struct AstrologyWheelView: View {
                     ctx.stroke(path, with: .color(color.opacity(opacity)), lineWidth: 0.8)
                 }
 
-                // ── 2. Ring circles ────────────────────────────────────────
-                for frac in [Ring.outer, Ring.zodiac, Ring.houses, Ring.planets] {
+                // ── 2. Ring circles — neon cyan, varying weight ────────────
+                let ringStyles: [(Double, Double)] = [
+                    (Ring.outer,   0.55),
+                    (Ring.zodiac,  0.45),
+                    (Ring.houses,  0.35),
+                    (Ring.planets, 0.25),
+                ]
+                for (frac, opacity) in ringStyles {
                     let r = CGFloat(R * frac)
                     ctx.stroke(
                         Path(ellipseIn: CGRect(x: cx - r, y: cy - r, width: r * 2, height: r * 2)),
-                        with: .color(Color.wheelRing),
-                        lineWidth: 0.75
+                        with: .color(Color.neonCyan.opacity(opacity)),
+                        lineWidth: 0.8
                     )
                 }
 
@@ -223,8 +253,10 @@ struct AstrologyWheelView: View {
                     path.move(to: CGPoint(x: cx + cos(a) * innerR, y: cy + sin(a) * innerR))
                     path.addLine(to: CGPoint(x: cx + cos(a) * outerR, y: cy + sin(a) * outerR))
                     ctx.stroke(path,
-                               with: .color(Color.white.opacity(major ? 0.70 : 0.30)),
-                               lineWidth: major ? 0.9 : 0.5)
+                               with: .color(major
+                                   ? Color.neonCyan.opacity(0.65)
+                                   : Color.brandCyan.opacity(0.18)),
+                               lineWidth: major ? 1.0 : 0.5)
                 }
 
                 // ── 6. House cusp lines ────────────────────────────────────
@@ -240,8 +272,10 @@ struct AstrologyWheelView: View {
                     path.move(to: CGPoint(x: cx + cos(a) * fromR, y: cy + sin(a) * fromR))
                     path.addLine(to: CGPoint(x: cx + cos(a) * toR,   y: cy + sin(a) * toR))
                     ctx.stroke(path,
-                               with: .color(Color.white.opacity(major ? 0.80 : 0.38)),
-                               lineWidth: major ? 1.0 : 0.5)
+                               with: .color(major
+                                   ? Color.neonCyan.opacity(0.80)
+                                   : Color.brandCyan.opacity(0.22)),
+                               lineWidth: major ? 1.2 : 0.5)
                 }
 
                 // ── 7. House numbers + axis labels ─────────────────────────
@@ -254,7 +288,7 @@ struct AstrologyWheelView: View {
 
                     let numText = Text(verbatim: "\(houseNum)")
                         .font(.system(size: 10, weight: .light, design: .default))
-                        .foregroundStyle(Color.white.opacity(0.40))
+                        .foregroundStyle(Color.brandLavender.opacity(0.45))
                     ctx.draw(ctx.resolve(numText), at: numPt)
 
                     if let label = houseAxisLabels[houseNum] {
@@ -262,7 +296,7 @@ struct AstrologyWheelView: View {
                         let axPt = geo.point(cx: cx, cy: cy, r: axR, lon: lon)
                         let axText = Text(label)
                             .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.90))
+                            .foregroundStyle(Color.neonCyan.opacity(0.90))
                         ctx.draw(ctx.resolve(axText), at: axPt)
                     }
                 }
@@ -273,30 +307,30 @@ struct AstrologyWheelView: View {
                     let a  = geo.screenAngle(planet.longitude)
                     let pt = CGPoint(x: cx + cos(a) * pR, y: cy + sin(a) * pR)
 
-                    // Dot at planet ring
-                    let dotR: CGFloat = 2.5
+                    // Dot at planet ring — neon cyan
+                    let dotR: CGFloat = 3.0
                     ctx.fill(
                         Path(ellipseIn: CGRect(x: pt.x - dotR, y: pt.y - dotR,
                                                width: dotR * 2, height: dotR * 2)),
-                        with: .color(.white)
+                        with: .color(Color.neonCyan.opacity(0.90))
                     )
 
-                    // Glyph: offset outward by +22
+                    // Glyph: offset outward by +22 — brand pearl
                     let glR  = pR + 22
                     let glPt = CGPoint(x: cx + cos(a) * glR, y: cy + sin(a) * glR)
                     let glyph = planetGlyphs[key] ?? "?"
                     let glText = Text(glyph)
                         .font(.system(size: 18))
-                        .foregroundStyle(Color.white.opacity(0.95))
+                        .foregroundStyle(Color.brandPearl.opacity(0.95))
                     ctx.draw(ctx.resolve(glText), at: glPt)
 
-                    // Retrograde ℞: offset inward by -22
+                    // Retrograde ℞: neon magenta
                     if planet.retrograde {
                         let rR  = pR - 22
                         let rPt = CGPoint(x: cx + cos(a) * rR, y: cy + sin(a) * rR)
                         let rText = Text("℞")
                             .font(.system(size: 11))
-                            .foregroundStyle(Color.orange.opacity(0.80))
+                            .foregroundStyle(Color.neonMagenta.opacity(0.85))
                         ctx.draw(ctx.resolve(rText), at: rPt)
                     }
                 }
@@ -336,7 +370,7 @@ private func midLongitude(from lon1: Double, to lon2: Double) -> Double {
 
 // MARK: - Preview data
 
-private extension AstrologyData {
+extension AstrologyData {
     static let previewSample: AstrologyData = {
         // Planets at fixed longitudes for layout testing
         let planets: [String: PlanetData] = [
@@ -375,7 +409,10 @@ private extension AstrologyData {
             aspects: aspects,
             lunarPhase: LunarPhase(degreesBetweenSM: 197, moonPhase: 4, moonPhaseName: "Full Moon"),
             elements: ["Fire": 1, "Earth": 2, "Air": 5, "Water": 1],
-            modalities: ["Cardinal": 3, "Fixed": 3, "Mutable": 3]
+            dominantElement: "Air",
+            modalities: ["Cardinal": 3, "Fixed": 3, "Mutable": 3],
+            dominantModality: "Cardinal",
+            polarity: "Positive"
         )
     }()
 }

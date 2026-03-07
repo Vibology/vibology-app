@@ -167,7 +167,10 @@ async def calculate_blueprint(request: BlueprintRequest):
         "aspects": astro_result["aspects"],
         "lunar_phase": astro_result["lunar_phase"],
         "elements": astro_result["elements"],
+        "dominant_element": astro_result["dominant_element"],
         "modalities": astro_result["modalities"],
+        "dominant_modality": astro_result["dominant_modality"],
+        "polarity": astro_result["polarity"],
     }
 
     # 8. Build Human Design section

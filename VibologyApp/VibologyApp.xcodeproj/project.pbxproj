@@ -20,6 +20,7 @@
 		AA00000100000000000000DA /* BirthDataInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000DA /* BirthDataInputView.swift */; };
 		AA00000100000000000000EA /* PlanetTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000200000000000000EA /* PlanetTableView.swift */; };
 		D8354CDD2F55CD0500880347 /* AstrologyWheelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8354CDC2F55CD0500880347 /* AstrologyWheelView.swift */; };
+		D8354D012F56FF0100880347 /* AstrologyStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8354D002F56FF0000880347 /* AstrologyStatsView.swift */; };
 		D8354CDF2F55CD2400880347 /* BlueprintCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8354CDE2F55CD2400880347 /* BlueprintCache.swift */; };
 		D8354CED2F560EC800880347 /* Aries.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE12F560EC800880347 /* Aries.svg */; };
 		D8354CEE2F560EC800880347 /* Cancer.svg in Resources */ = {isa = PBXBuildFile; fileRef = D8354CE22F560EC800880347 /* Cancer.svg */; };
@@ -51,6 +52,7 @@
 		AA00000200000000000000DA /* BirthDataInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthDataInputView.swift; sourceTree = "<group>"; };
 		AA00000200000000000000EA /* PlanetTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanetTableView.swift; sourceTree = "<group>"; };
 		D8354CDC2F55CD0500880347 /* AstrologyWheelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AstrologyWheelView.swift; sourceTree = "<group>"; };
+		D8354D002F56FF0000880347 /* AstrologyStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AstrologyStatsView.swift; sourceTree = "<group>"; };
 		D8354CDE2F55CD2400880347 /* BlueprintCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlueprintCache.swift; sourceTree = "<group>"; };
 		D8354CE02F560EC800880347 /* Aquarius.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Aquarius.svg; sourceTree = "<group>"; };
 		D8354CE12F560EC800880347 /* Aries.svg */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Aries.svg; sourceTree = "<group>"; };
@@ -143,6 +145,7 @@
 				AA000002000000000000005A /* BodygraphView.swift */,
 				AA000002000000000000008A /* SVGPathParser.swift */,
 				AA00000200000000000000EA /* PlanetTableView.swift */,
+				D8354D002F56FF0000880347 /* AstrologyStatsView.swift */,
 			);
 			path = Blueprint;
 			sourceTree = "<group>";
@@ -281,6 +284,7 @@
 				AA000001000000000000006A /* SVGPathParser.swift in Sources */,
 				AA00000100000000000000AA /* LocationSearchService.swift in Sources */,
 				D8354CDD2F55CD0500880347 /* AstrologyWheelView.swift in Sources */,
+				D8354D012F56FF0100880347 /* AstrologyStatsView.swift in Sources */,
 				AA00000100000000000000BA /* CartographerService.swift in Sources */,
 				AA00000100000000000000CA /* BlueprintViewModel.swift in Sources */,
 				AA00000100000000000000DA /* BirthDataInputView.swift in Sources */,

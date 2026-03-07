@@ -66,7 +66,10 @@ struct AstrologyData: Codable {
     let aspects: [AspectData]
     let lunarPhase: LunarPhase
     let elements: [String: Int]
+    let dominantElement: String?
     let modalities: [String: Int]
+    let dominantModality: String?
+    let polarity: String?
 }
 
 struct PlanetData: Codable {

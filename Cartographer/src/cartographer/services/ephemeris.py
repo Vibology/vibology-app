@@ -32,8 +32,8 @@ BODY_IDS: dict[str, int] = {
     "Uranus":     swe.URANUS,
     "Neptune":    swe.NEPTUNE,
     "Pluto":      swe.PLUTO,
-    "North_Node": swe.TRUE_NODE,
-    "South_Node": swe.TRUE_NODE,   # longitude + 180°
+    "North_Node": swe.MEAN_NODE,
+    "South_Node": swe.MEAN_NODE,   # longitude + 180°; Mean Node matches standard astrology convention
     "Chiron":     swe.CHIRON,      # asteroid 2060; requires seas_NN.se1
     "Lilith":     swe.MEAN_APOG,   # Black Moon Lilith (mean lunar apogee)
     # HD gate calculations also call "Earth" — treat as Sun + 180°
@@ -106,6 +106,37 @@ def get_timescale() -> _TimescaleShim:
 
 # ─── Ecliptic positions ───────────────────────────────────────────────────────
 
+def get_planet_ecliptic_coords(jd_ut: float, body_key: str) -> tuple[float, float]:
+    """
+    Return (longitude, latitude) ecliptic coordinates for the named body.
+
+    Handles Earth (Sun + 180°, lat 0) and South_Node (North_Node + 180°, lat negated).
+    Returns (nan, nan) for unknown bodies.
+    """
+    if body_key == "Earth":
+        lon = (get_ecliptic_longitude(jd_ut, "Sun") + 180.0) % 360.0
+        return lon, 0.0
+
+    body_id = BODY_IDS.get(body_key)
+    if body_id is None:
+        return float("nan"), float("nan")
+
+    try:
+        xx, _ = swe.calc_ut(jd_ut, body_id, _SWE_FLAGS)
+    except swe.Error as e:
+        logger.warning("swe.calc_ut coords failed for %s: %s", body_key, e)
+        return float("nan"), float("nan")
+
+    lon = float(xx[0]) % 360.0
+    lat = float(xx[1])
+
+    if body_key == "South_Node":
+        lon = (lon + 180.0) % 360.0
+        lat = -lat
+
+    return lon, lat
+
+
 def get_ecliptic_longitude(jd_ut: float, body_key: str) -> float:
     """
     Return ecliptic longitude (0–360°) for the named body at JD (UT).
@@ -139,8 +170,10 @@ def get_planet_speed(jd_ut: float, body_key: str) -> float:
     Return longitude speed (degrees/day) for the named body.
     Negative means retrograde.
     """
-    if body_key in ("Earth", "South_Node"):
+    if body_key == "Earth":
         return 0.0
+    if body_key == "South_Node":
+        body_key = "North_Node"  # South Node is North Node + 180°; same speed
 
     body_id = BODY_IDS.get(body_key)
     if body_id is None:

@@ -34,10 +34,16 @@ struct ContentView: View {
                     }
 
                     Tab("Astrology", systemImage: "sparkles") {
-                        AstrologyWheelView(astrology: blueprint.astrology)
+                        HStack(spacing: 0) {
+                            AstrologyWheelView(astrology: blueprint.astrology)
+                            Divider()
+                                .background(Color(red: 0.616, green: 0.847, blue: 0.969).opacity(0.15))
+                            AstrologyStatsView(astrology: blueprint.astrology)
+                                .frame(width: 300)
+                        }
                     }
                 }
-                .frame(minWidth: 620, idealWidth: 800, minHeight: 500)
+                .frame(minWidth: 860, idealWidth: 1160, minHeight: 600)
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Button("New Chart") { vm.reset() }

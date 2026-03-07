@@ -9,6 +9,7 @@ import pytz
 from .ephemeris import (
     birth_to_time,
     get_ecliptic_longitude,
+    get_planet_ecliptic_coords,
     get_planet_speed,
     calculate_houses,
 )
@@ -40,12 +41,19 @@ PLANET_NAMES = [
 ]
 
 # Aspect definitions: (name, exact angle, max orb)
+# Major aspects first, then minor — ordered by angle for clarity.
 ASPECTS = [
-    ("conjunction",  0.0,   10.0),
-    ("sextile",     60.0,    6.0),
-    ("square",      90.0,    8.0),
-    ("trine",      120.0,    8.0),
-    ("opposition", 180.0,   10.0),
+    ("conjunction",    0.0,  10.0),
+    ("semisextile",   30.0,   2.0),
+    ("semisquare",    45.0,   3.0),
+    ("sextile",       60.0,   6.0),
+    ("quintile",      72.0,   2.0),
+    ("square",        90.0,   8.0),
+    ("trine",        120.0,   8.0),
+    ("sesquiquadrate",135.0,  3.0),
+    ("biquintile",   144.0,   2.0),
+    ("quincunx",     150.0,   3.0),
+    ("opposition",   180.0,  10.0),
 ]
 
 LUNAR_PHASES = [
@@ -127,7 +135,7 @@ def calculate_natal_chart(
     # Planet positions
     planets_data = []
     for planet_name in PLANET_NAMES:
-        lon = get_ecliptic_longitude(t, planet_name)
+        lon, lat = get_planet_ecliptic_coords(t, planet_name)
         if math.isnan(lon):
             continue
         speed = get_planet_speed(t, planet_name)
@@ -140,7 +148,7 @@ def calculate_natal_chart(
             "name": display_name,
             "sign": sign,
             "longitude": round(lon, 6),
-            "latitude": 0.0,
+            "latitude": round(lat, 6),
             "speed": round(speed, 6),
             "retrograde": retrograde,
             "house": house,
@@ -151,24 +159,44 @@ def calculate_natal_chart(
     houses_data["asc"] = round(house_data["asc"], 6)
     houses_data["mc"]  = round(house_data["mc"],  6)
 
-    # Aspects
+    # Aspects — pick the closest matching aspect per planet pair, with applying/separating.
+    # Applying: orb is decreasing (aspect perfects in the future).
+    # Approximated by comparing current orb to orb 0.01 days forward.
+    _DT = 0.01  # days
     aspects_data = []
     for i in range(len(planets_data)):
         for j in range(i + 1, len(planets_data)):
             lon_i = planets_data[i]["longitude"]
             lon_j = planets_data[j]["longitude"]
+            spd_i = planets_data[i]["speed"]
+            spd_j = planets_data[j]["speed"]
             diff = _angular_diff(lon_i, lon_j)
+
+            # Find the closest aspect within orb for this pair.
+            best_name, best_orb, best_angle = None, float("inf"), 0.0
             for asp_name, asp_angle, max_orb in ASPECTS:
                 orb = abs(diff - asp_angle)
-                if orb <= max_orb:
-                    aspects_data.append({
-                        "planet1": planets_data[i]["name"],
-                        "planet2": planets_data[j]["name"],
-                        "aspect": asp_name,
-                        "orb": round(orb, 4),
-                        "applying": False,  # speed-based applying/separating requires more computation
-                    })
-                    break  # only the closest aspect per pair
+                if orb <= max_orb and orb < best_orb:
+                    best_orb = orb
+                    best_name = asp_name
+                    best_angle = asp_angle
+
+            if best_name is None:
+                continue
+
+            # Applying: check if orb shrinks in the next moment.
+            next_lon_i = (lon_i + spd_i * _DT) % 360.0
+            next_lon_j = (lon_j + spd_j * _DT) % 360.0
+            next_orb = abs(_angular_diff(next_lon_i, next_lon_j) - best_angle)
+            applying = next_orb < best_orb
+
+            aspects_data.append({
+                "planet1": planets_data[i]["name"],
+                "planet2": planets_data[j]["name"],
+                "aspect": best_name,
+                "orb": round(best_orb, 4),
+                "applying": applying,
+            })
 
     # Elements & modalities
     elements = {"Fire": 0, "Earth": 0, "Air": 0, "Water": 0}
@@ -179,6 +207,11 @@ def calculate_natal_chart(
             elements[ELEMENT_MAP[sign]] += 1
         if sign in MODALITY_MAP:
             modalities[MODALITY_MAP[sign]] += 1
+
+    dominant_element = max(elements, key=elements.get)
+    dominant_modality = max(modalities, key=modalities.get)
+    polarity_positive = elements["Fire"] + elements["Air"]
+    polarity_negative = elements["Earth"] + elements["Water"]
 
     # Lunar phase
     sun_lon = next((p["longitude"] for p in planets_data if p["name"] == "Sun"), 0.0)
@@ -203,7 +236,10 @@ def calculate_natal_chart(
         "aspects": aspects_data,
         "lunar_phase": lunar_phase_data,
         "elements": elements,
+        "dominant_element": dominant_element,
         "modalities": modalities,
+        "dominant_modality": dominant_modality,
+        "polarity": "Positive" if polarity_positive >= polarity_negative else "Negative",
     }
 
 
